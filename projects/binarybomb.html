@@ -1,0 +1,335 @@
+---
+layout: default
+title: Binary Bomb
+---
+            <section id="intro">
+                <img src="../images/projects/binaryb.jpg" width="100%" height="250px">
+                <header class="major">
+                    <h2>Binary Bomb</h2>
+                </header>
+                This binary bomb was an assignment I was given years ago during my computer architecture and system programming course at university. I remember at the time I had absolutely no idea how to go at it, I had no clue how to read assembly and I had never ever used gdb before. Needless to say, I was not able to solve it. Like, not even remotely.<br>
+                So while a friend of mine was following the same course and had access to the material, I asked him to forward me the challenge, as I wanted to try my hand at it again. First of all because I finally have more or less an understanding of how these things work, and secondly because I wanted to play around with IDA and gdb.
+                <p>I can't provide the actual files I worked on, but a lot of repositories offer similar challenges, for example <a href="https://github.com/luongvo209/Binary-Bomb">luongvo209's repo</a>
+            </section>
+            
+            <!--Install-->
+            <section>
+                <h3>Install and Run</h3>
+                The challenge itself is an executable C file, compiled for Linux x64. It will run just by calling it from the terminal, as in <i>./bomb</i>.<br>
+                To analyze what is going on, we will use the <a href="https://www.hex-rays.com/products/ida/support/download_freeware.shtml">free version of IDA</a>, that should be handled directly by the system software installer when you download the file. IDA will give us a nice overview of the code and especially of the workflow. The free version does not give the possibility of doing dynamic analysis, but in case you have the complete version feel free to use it to go through the entire project. To load the project into IDA it is enough to drag and drop the executable over the IDA icon, and the software will start and do all the analysis automatically.<br>
+                For the dynamic analysis, we will use GDB (should be preinstalled in Linux, otherwise go with <i>sudo apt install gdb</i>) and we will expand it with the great GDB dashboard that you can download from <a href="https://github.com/cyrus-and/gdb-dashboard">cyrus-and's repo</a>. The dashboard will work just by putting the provided .gdbinit file in your home folder. To pipe GDB data into it you have to do the following:
+                <ol>
+                    <li> Start GDB in one terminal</li>
+                    <li> In another terminal run the <i>tty</i> command and copy the result (e.g. /dev/ttys001). Leave this terminal open, as it is where GDB will pipe the data</li>
+                    <li> In the GDB terminal issue the command <i>dashboard -output /dev/ttys001</i> (with your tty result)</li>
+                    <li> Debug as usual, magic will happen in the second terminal</li>
+                </ol>
+                If you are as newbie in GDB as me, here are the commands that I found most useful (square brackets are just to give options, do not put them in the command itself):<p>
+                <div align="center">
+                <table style="width: 80%;">
+                    <tr>
+                        <th><h4>Command</h4></th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td>gdb executable_name</td>
+                        <td>Launch the debugger with the given executable</td>
+                    </tr>
+                    <tr>
+                        <td>gdb --args executable_name parameters</td>
+                        <td>Launch the debugger with the given executable and pass the given parameters to the executable<br></td>
+                    </tr>
+                    <tr>
+                        <td>run</td>
+                        <td>Start or restart the execution of the program<br></td>
+                    </tr>
+                    <tr>
+                        <td>c</td>
+                        <td>Continue execution until the next breakpoint</td>
+                    </tr>
+                    <tr>
+                        <td>ni</td>
+                        <td>Go to the next assembly instruction (step over functions)</td>
+                    </tr>
+                    <tr>
+                        <td>si</td>
+                        <td>Go to the next assembly instruction (step in functions)</td>
+                    </tr>
+                    <tr>
+                        <td>fin</td>
+                        <td>Run unti return of current function<br></td>
+                    </tr>
+                    <tr>
+                        <td>break [*0xYYYYYYYY || func_name]</td>
+                        <td>Set a breakpoint to the given address or function</td>
+                    </tr>
+                    <tr>
+                        <td>i b</td>
+                        <td>Infos on existing breakpoints</td>
+                    </tr>
+                    <tr>
+                        <td>delete Y</td>
+                        <td>Delete breakpoint number Y</td>
+                    </tr>
+                    <tr>
+                        <td>x/Yx[d || w || ...] [$reg_name || 0xYYYYYYYY]</td>
+                        <td>Show Y elements as double/word/... from the given register or address</td>
+                    </tr>
+                </table>
+            </div>
+                As a last detail, the version of the bomb that I used accepted as a parameter a file containing the already found keys, one per line. This makes it easier to reach the current point of the analysis without having to retype all the keys after every restart.
+            </section>
+            
+            
+            <!--Phase1-->
+            <section>
+                <h3>Phase 1</h3>
+                <h4>String comparison.</h4>
+                This phase is really short and does not require the use of GDB as IDA does all the needed work for us.<p>
+                <div align="center"><img src="../images/projects/binarybomb/phase1.png" width="500px" /></div><br>
+                The only thing that happens in the phase is loading a register with the address of a string, and invoke a method called <i>strings_not_equal</i>. It is easy to guess what that method does, and we can see the we will reach the end of the phase without exploding if the return value of that method is 0. Therefore we can assume that the key we are looking for is the one that is passed as argument. In IDA, you can double click on it to reach its address, and copy the entire string from there.
+            </section>
+            
+            <!--Phase2-->
+            <section>
+                <h3>Phase 2</h3>
+                <h4>Looping.</h4>
+                This phase is pretty clear on which is the expected output, as it reads it invoking a method called <i>read_six_numbers</i><br> It gets slightly trickier when it comes to analyze how those six integers are analyzed, because it happens in a loop where each element depends from the previous one.<p>
+                <div align="center"><img src="../images/projects/binarybomb/phase2.png" width="400px"/></div><br>
+                The loop itrates over $ebx, which is initialized to 1 before the loop and is incremented one by one until it reaches the value 6, at that point the loop is over. This hints on the fact that the loop will check every element of the input.<br>
+                What decides if the bomb explodes or not is the following line:
+                <code>cmp [rbp+4], eax</code>
+                In assembly, <i>cmp</i> subtracts the second operand from the first and just sets the flags without storing the result of the operation. It means that if the two operands are the same, the Zero Flag will be set, and this is what the following instruction is doing: go on with the next iteration of the loop only if $eax and [rbp+4] contain the same value.<br>
+                It helps going through the loop a couple of times and looking what is stored in $eax and in $rbp: to do that you can reach the compare instruction and then look at the registers with <code>x/x $rbp</code>, <code>x/x $rbp+4</code> and <code>x/x $eax</code>. You will see that $rbp contains the current input element, and $rbp+4 the following one, while $eax contains another value to which our input should correspond to defuse the bomb.<br>
+                Let's analyze the loop: in each iteration $eax is initialized to the current iteration value, then it has added the value of the current input, and that should correspond to the value of the next input. If the comparison is passed, our counter is incremented and so is the pointer to the current input. The corresponding pseudocode is the following one:
+                <pre><code>eax = 1 + rbp[0]
+for i = 1..5:
+    if eax != rbp[i]
+        explode
+    eax = eax + i + 1</code></pre>
+                To get the key, start with a random value as rbp[0] and work through the loop to get the following 5 elementes needed to pass this phase. An example of a working sequence is 61 ; 62 ; 64 ; 67 ; 71 ; 76.
+            </section>
+            
+            <!--Phase3-->
+            <section>
+                <h3>Phase 3</h3>
+                <h4>Switch Statement</h4>
+                Here is when IDA starts getting really useful, thanks to all the data that it extracts during its initial analysis and inserts exactly where we need it. An example is for the input of this function: the bomb uses a library function (sscanf), that we can look up on msdn to discover that it takes a pointer to a buffer and a pointer to a format as parameters. IDA provides us with the format, that is stored as a string: %d %c %d. Looking up the string formatting in C, we see that this corresponds to an integer, a char and an integer again.<p>
+                <div align="center"><img src="../images/projects/binarybomb/phase3_1.png" width="250px"></div><br>
+                If the format of the input is respected, the next instruction checks the first input. We know it's the input because that's the pointer to the buffer that we passed to the sscanf method, and we know it's the first one because we can look into it with GDB using <code>x/4x $rsp+0x28-0x18</code>. This value should be <= 7, to cover the switch cases. If it is larger, it will fall directly to the default case, making the bomb explode.<p>
+                <div align="center"><img src="../images/projects/binarybomb/phase3_2.png" width="400px"></div><br>
+                Thanks to IDA we know that we are going through a switch clause (jumping to different branches with the instruction <code>jmp ds:off_402620[rax*8]</code>), and we can look into each branch. The branches all have the same structure: moving a value into $eax, comparing a value to a memory location and if the result sets the zero flag (meaning the values are the same) jumping to another comparision of the lowest bits of $eax. The memory location that we compare is also a buffer that we passed to sscanf, and it is where our second integer is stored (quickly confirmed with GDB <code>x/4x $rsp+0x28-0x14</code>). The value loaded into $eax is an ASCII value, and that should correspond to our char input.<br>
+                To pass this phase, it is enough to go through the 8 branches of the switch clause (well, picking one is enough), and using as input the number of that branch and the char and number defined in that same branch. In case of laziness, here is the complete table:<p>
+                <div align="center">
+                    <table style="width: 60%;">
+                    <tr>
+                        <th>branch</th>
+                        <th>hex</th>
+                        <th>char</th>
+                        <th>hex</th>
+                        <th>int</th>
+                    </tr>
+                    <tr>
+                        <td>0</td>
+                        <td>0x71</td>
+                        <td>q</td>
+                        <td>0x2B1</td>
+                        <td>689</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>0x67</td>
+                        <td>g</td>
+                        <td>0x1BF</td>
+                        <td>447</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>0x61</td>
+                        <td>a</td>
+                        <td>0x15B</td>
+                        <td>347</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>0x66</td>
+                        <td>f</td>
+                        <td>0x2EF</td>
+                        <td>751</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>0x71</td>
+                        <td>q</td>
+                        <td>0x2D4</td>
+                        <td>724</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>0x7A</td>
+                        <td>z</td>
+                        <td>0x367</td>
+                        <td>871</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>0x69</td>
+                        <td>i</td>
+                        <td>0x1C9</td>
+                        <td>457</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>0x62</td>
+                        <td>b</td>
+                        <td>0x213</td>
+                        <td>531</td>
+                    </tr>
+                </table>
+            </div>
+            </section>
+            
+            <!--Phase4-->
+            <section>
+                <h3>Phase 4</h3>
+                <h4>Recursion.</h4>
+                The phase requires an input made by two numbers, as indicated by the "%d %d" in the parameter passed to sscanf (this can be seen with IDA). The second number passed is the first one checked (look at $eax with GDB), and it can only take the value 2, 3 or 4.<p>
+                <div align="center"><img src="../images/projects/binarybomb/phase4.png" width="250px"></div><br>
+                If this check is passed, the executable goes on to run func4, which is a recursive method. I honestly have no clue what the method does (and I would love to know, if you have any clue), but after running some tests with GDB, it is clear that it always returns the same values depending on the input. This means that with input 2 the output is 40, with input 3 it is 60 and with input 4 it is 80. This output is the first value that you want to pass to defuse the bomb.
+            </section>
+            <!--Phase5-->
+            <section>
+                <h3>Phase 5</h3>
+                <h4>Array.</h4>
+                This phase requires a string of length 6, judging by the method that is invoked to check the input. Then there is a loop, and we can assume we are looping over each element of the input. Somehow, these elements are used to build a value in $ecx that has to correspond to 0x32 (== 50) after the loop ends in order to defuse the bomb.<p>
+                <div align="center"><img src="../images/projects/binarybomb/phase5_1.png" width="250px"></div><br>
+                The value in $ecx is built by repeatedly adding to itself a value of an array stored in memory. Which value is picked depends on current char of our input.<p>
+                <div align="center"><img src="../images/projects/binarybomb/phase5_2.png" width="500px"></div><br>
+                The values of the array are the ones reported in the figure. To defuse the bomb, we have to pick 6 values that summed give 50. The trick is that these values are picked as their index in the array, and the index is given by the lowest byte of the ASCII representation of the current char. This index is obtained by moving the input to $edx (which is the lowest part of $rdx, used later to access the array) and masking out everything apart from the lowest byte, ensuring that the value will be between 0x0 and 0xF. A way to get the correct sum is 10 + 10 + 10 + 10 + 1 + 9, which corresponds to the string 'aaaacf'.
+            </section>
+            
+            <!--Phase6-->
+            <section>
+                <h3>Phase 6</h3>
+                <h4>Linked List.</h4>
+                Input of this phase is 6 numbers, given that we trust the name of the method that reads in data. The input is then run through a tricky loop: the first part just checks that the given numbers are between 1 and 6, exploding the bomb for any other value. The second part is making sure that the numbers do not repeat themselves in the input, and I realized this just by running through the loop multiple times with test values and seeing what was the behavior. If you have any better way to go at it, I would be happy to know it.<br>
+                When all the checks are passed successfully, we move on to actually using the input. IDA makes it clear that we are accessing a structure in memory at a fix offset, and we can look at it with GDB:<p>
+                <div align="center"><img src="../images/projects/binarybomb/phase6_1.png" width="600px"></div><br>
+                The structure is a linked list that contains a value, an index and the address of the next element. The problem is now to understand how this object is used. Let's start by saying that the current input is stored in $ecx. We iterate over the input until we find the position of value 1 in the input (in this case, it will be in fifth position to indicate the fifth node). There is a lot of stuff going on with the node (again, if you know what it is please let me know), but the next important instructions for us are <code>cmp [rbx], eax; jle loc_401248</code><p>
+                <div align="center"><img src="../images/projects/binarybomb/phase6_2.png" width="400px"></div><br>
+                Among another bunch of stuff, what is happening here is that we are comparing the value of the node we gave as input with another value of those nodes, and we will do this with all nodes. It takes some iterations with GDB to see that the nodes we are comparing with the ones given by our input are in increasing order. This means that we have to give as input the order of nodes from the smallest to the highest. The sequence is the following: 5 ; 3 ; 6 ; 1 ; 2 ; 4
+            </section>
+            <!--SecretPhase-->
+            <section>
+                <h3>Secret Phase</h3>
+                <h4>Double Linked List + Recursion.</h4>
+                By exporting the strings of the bomb (for example with the command <i>strings bomb</i>) or by looking at the functions recognized by IDA, we can see that there is a secret phase method. By doing a cross reference with IDA we identify the caller of the secret_phase function, which is the phase_defused method called after each phase of the bomb. However, to invoke this method we first need to pass the correct input to reach the calling instruction.<p>
+                <div align="center"><img src="../images/projects/binarybomb/secretphase_1.png" width="500px"></div><br>
+                To access the phase we see that the program re-reads the current input expecting two numbers and a string (%d %d %s). The only phase that takes a similar input is the fourth, that accepts %d %d: it means that by adding a string to this phase we will be able to access the secret phase. What we have to add is the string "DrEvil", as showed by IDA.<p>
+                <div align="center"><img src="../images/projects/binarybomb/secretphase_2.png" width="250px"></div><br>
+                Finally in the secret phase itself, we have to pass an input. The input string will be casted to long with strtol, and the result will have to be smaller or equal to 0x3E8 to avoid an explosion. After some tests and the help of GDB to check what is returned by strtol in $eax, it becomes clear that the accepted values are between 1 and 1001. This value is then used by the method fun7, which also takes a pointer to a data structure as an agrument. Also we know that the value returned by the function has to be equal to 7 to successfully defuse the bomb.<p>
+                <div align="center"><img src="../images/projects/binarybomb/secretphase_3.png" width="600px"></div><br>
+                This data structure is a list where each element contains a value, and two pointers to other nodes. The value is at node_address, the first pointer at node_address+8, the second pointer at node_address+16. Here is the conent:<p>
+                    <div align="center">
+                <table style="width: 60%;">
+                    <tr>
+                        <th>node</th>
+                        <th>value<br></th>
+                        <th>1. linked node<br></th>
+                        <th>2. linked node<br></th>
+                    </tr>
+                    <tr>
+                        <td>n1</td>
+                        <td>0x24</td>
+                        <td>n21</td>
+                        <td>n22</td>
+                    </tr>
+                    <tr>
+                        <td>n21</td>
+                        <td>0x8</td>
+                        <td>n31</td>
+                        <td>n32</td>
+                    </tr>
+                    <tr>
+                        <td>n22</td>
+                        <td>0x32</td>
+                        <td>n33</td>
+                        <td>n34</td>
+                    </tr>
+                    <tr>
+                        <td>n32</td>
+                        <td>0x16</td>
+                        <td>n43</td>
+                        <td>n44</td>
+                    </tr>
+                    <tr>
+                        <td>n33</td>
+                        <td>0x2D</td>
+                        <td>n45</td>
+                        <td>n46</td>
+                    </tr>
+                    <tr>
+                        <td>n31</td>
+                        <td>0x6</td>
+                        <td>n41</td>
+                        <td>n42</td>
+                    </tr>
+                    <tr>
+                        <td>n34</td>
+                        <td>0x6B</td>
+                        <td>n47</td>
+                        <td>n48</td>
+                    </tr>
+                    <tr>
+                        <td>n45</td>
+                        <td>0x28</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>n41</td>
+                        <td>0x1</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>n47</td>
+                        <td>0x63</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>n44</td>
+                        <td>0x23</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>n42</td>
+                        <td>0x7</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>n43</td>
+                        <td>0x14</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>n46</td>
+                        <td>0x2F</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>n48</td>
+                        <td>0x3E9</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </table>
+            </div>
+                We enter fun7 knowing that we have to keep an eye on $eax, that will contain the return value, and on the data structure, which is pointed at by $rdi (easily checked with GDB). The function is recursive, and we can see that we have to reach the value of 7 by either using <code>add eax, eax</code> or <code>lea eax, [rax+rax+1]</code>. The second case corresponds to $eax = 2*$eax + 1.<br>
+                What we have to do is to jump along the nodes of the data structure the correct amount of times to have $eax set to the current value. Starting from n1, the input value is compared to the value of the current node and the following node is determined depending on whether the zero flag is set or not. We want to always fall on the case where our input is bigger than the node value, so that we can get to 7 by doing <code>2 * ( 2 * ( 2 * eax + 1 ) + 1 ) + 1</code>. Also we have to pay attention that our input corresponds to the value of the last node we want to visit, otherwise $eax will be screwed up. It seems that it is enough to visit three nodes to achieve the result, but running it with GDB shows that we miss one iteration. Plus, to exit the recursion our last value has to be equal to what is stored in $esi, which corresponds to the value of the last node. So with 4 jumps we have to reach n48, and leaves us with only a path: n1, n22, n34, n48. This also means that our input has to be larger than 0x24, than 0x32 and 0x6B, and also be equal to 0x3E9, which clearly means that it has to be 1001 (= 0x3E9).
+            </section>

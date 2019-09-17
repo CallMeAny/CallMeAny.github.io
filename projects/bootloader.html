@@ -1,0 +1,488 @@
+---
+layout: default
+title: LasagnaLoader
+---
+        <section id="intro">
+            <img src="../images/projects/bootloader.jpg" width="100%" height="250px">
+            <header class="major">
+                <h2>Lasagna Loader</h2>
+                I found <a href="http://3zanders.co.uk/2017/10/13/writing-a-bootloader/">this</a> amazing serie of articles about how to build a bootloader for a 32bits x86 operating system kernel, and I did my best to follow it and work out the tiny bits that get a computer to boot and load the OS properly. The code is taken from the linked website, and I tried to add comments and explanations on how the instructions are working.
+            </header>
+        </section>
+        
+        <section id="tools">
+            <h2>Tools</h2>
+            <ul>
+                <li><b>NASM Assembler:</b> the Netwide Assembler is an assembler and disassembler for the Intel x86 architecture. It can be used to write 16-bit, 32-bit (IA-32) and 64-bit (x86-64) programs.</li>
+                <li><b>QEMU:</b> Quick Emulator is a hosted hypervisor that performs hardware virtualization: it emulates CPUs of different architectures through dynamic binary translation.</li>
+            </ul>
+            <pre><code>sudo apt install nasm quemu</code></pre>
+        </section>
+
+        <section id="bios">
+            <h2>BIOS</h2>
+            The first thing that happens after pressing the power button of the computer is that the BIOS is loaded from a flash memory chip. The BIOS (Basic Input Output System) is a non-volatile firmware, meaning that it stays in memory even after the power has been removed.<br>
+            The BIOS is responsible for initializing and testing the hardware, through the POST (Power On Self Test): this test is independent from operating systems (it runs even if no OS is installed), and is used to check that all basic devices are present and working correctly. This means among others the processor, the memory, the keyboard and so on. The booting process continues only after the POST has returned successfully.<br>
+            If the hardware test is ok, the BIOS proceeds to read the first 512 bytes of the bootable media device (in our case we will simulate a floppy disk) into memory. If the last two bytes of this data equal 0xAA55 (remember to check endianness) then the BIOS jumps to location 0x7C00 resulting in transferring the control to the bootloader.
+        </section>
+        
+        <section id="16bit">
+            <h2>16bit Hello World</h2>
+            When we first hit the CPU, it will be running in 16 bit mode, also called <b>Real Mode</b>, meaning that only the 16 bit registers are available. We tell this to the compiler in line 1, just before telling it the offset of the output, which will be in the bootloader sector.<br>
+            The first real instructions in lines 5 and 6 are to put the address of the hello label in the $si register, and the correct interrupt code in the $ah register. This <a href="https://en.wikipedia.org/wiki/BIOS_interrupt_call">BIOS interrupt call</a> corresponds to 'Write character in TTY mode', which is the basic user interface provided by the terminal.<br>
+            The instruction <i>lodsb</i> at line 9 loads the byte at address $ds:si into $al. This is in preparation for running the BIOS interrput calling Video Services at line 12. Before doing the interrupt call we check that there really is something ready to be printed by checking whether $al contains a value or not and jumping to halt if it contains 0.<br>
+            When we reach halt, what we do is clear the interrupt flags and actually stop the execution.<br>
+            What is left to do at line 19 is to initialize some memory with our "Hello World" value. We assign a label to it so that we can call it from the code, as done in line 5.<br>
+            We know that the BIOS will only load 512 bytes into memory, and this means that our bootloader has to stay within that limit to avoid ending up in uninitialized memory. Our instructions will be shorter than that, but we don't know the exact length, the only thing we know is that at the end we need the magic number 0xAA55 to mark the sector as bootable. Lines 21-22 take care of this: first we pad whatever is left to 510 bytes with 0s, then we insert in the last two bytes the magic value. Result: 512 bytes of bootable goodness.<p>
+            
+            <pre class="brush: c">
+                    bits 16     ; tell compiler this is 16 bit code
+                    org 0x7C00  ; tell compiler the offset of the output
+
+                    boot:
+                        mov si, hello   ; put the address of the hello label in si register
+                        mov ah, 0x0e    ; 0x0e means "Write character in TTY mode", put that in ah register
+                     
+                    .loop:
+                        lodsb       ; load byte at address si into al
+                        or al, al   ; al == 0?
+                        jz halt     ; if al == 0 then jump to halt label
+                        int 0x10    ; run BIOS interrupt Video Services
+                        jmp .loop
+                     
+                    halt:
+                        cli ; clear interrupt flag
+                        hlt ; halt execution
+                     
+                    hello: db "Hello World!" , 0
+
+                    times 510 - ($-$$) db 0 ; pad remaining 510 bytes with zeros
+                    dw 0xaa55               ; mark this 512 byte sector bootable
+                 </pre>
+             <br>
+         
+            After saving this in .asm format, we can compile it with nasm and launch it with qemu giving a floppy disk as booting device to have our Hello World boot and appear on screen.
+            
+            <pre class="brush: bash">
+                nasm -f bin asmBoot.asm -o asmBoot.bin
+                qemu-system-x86_64 -fda asmBoot.bin
+            </pre>
+        </section>
+        
+        <section id="addresses">
+            <h2>Memory Addresses</h2>
+			<h3>Segmentation</h3>
+			In the 16 bit mode we use logical addresses of the form X:Y, and to translate them into physical addresses we use (X * 0x10) + Y or X << 4 + Y. The X representes a segment of 64k bits, and the Y represents the offset within that segment.
+			The x86 architecture has 6 dedicated segment registers, which are totally independent of one another, and therefore can for example overlap:
+				<ul>
+					<li><b>CS:</b> code segment
+					<li><b>DS:</b> data segment
+					<li><b>SS:</b> stack segment
+					<li><b>ES:</b> extra segment
+					<li><b>FS:</b> general purpose segment
+					<li><b>GS:</b> general purpose segment
+				</ul>
+			To note is that, even if not explicitly used into the code, as soon as one of this registers is declared, all memory accesses will be offset by the declared value.
+			<h3>Paging</h3>
+				The memory of a system is divided into pages, which is the smallest unit possible of memory allocation. All pages are stored in a Page Table, and to access data you give the index of the desired page in the table, and an offset to look into in that page. Offsets have to allow accessing any byte in the page.
+			<h3>Virtual addresses</h3>
+				These addresses are used by programs: they are the 32-bits pointers that we see in languages like C or that we handle in assembly. They are composed by a page and an offset into that page. From this it is possible to move into linear addresses by adding the value contained into the segment registers.
+			<h3>Physical addresses</h3>
+				By splitting the virtual address in its page pointer and offset, we can look up in the Page Table at which physical address we should be looking for the data we want. 
+<div align="center"><img src="../images/projects/bootloader/pagetable.png" width="600px"></div>
+        </section>
+        
+        <section id="gdt">
+            <h2>Global Descriptor Table</h2>
+            The Global Descriptor Table is specific to the IA32 architecture, and contains information for the CPU regarding the memory segmentation: for each segment it defines things like base address, size and rwx (read, write, execute) privileges.<br>
+            The GDT is loaded with the <i>lgdt</i> instruction, which takes as parameter the location of a GDT description structure. This structure contains the size of the table (up to 65535, meaning 8192 entries, 8 bytes each), and the offset representing the linear address of the table itself. For example, to open all 4 GB of available memory we pick a base of 0x00000000 and a segment limit of 0xFFFFFFFF.<br>
+            Entries have the following structure:<br>
+            <div align="center"><img src="../images/projects/bootloader/gdt.png" width="800px"></div>
+            <ul>
+            	<li>The base is a 32 bit value containing the linear address where the segment begins.</li>
+            	<li>The limit, a 20 bit value, tells the maximum addressable unit (either in 1 byte units, or in pages).</li>
+            	<li>Present with value 1 indicates a valid entry.</li>
+            	<li>The ring level has a value between 0 and 3 to indicate the kernel level.</li>
+            	<li>Direction uses 0 or 1 to indicate whether segment grows up from base or down for a data segment; and 0 or 1 again to indicate that it can only execute from ring level or prevent jumping to higher levels.</li>
+            	<li>Read/Write indicates the permissions on the segment</li>
+            	<li>Accessed tells whether the CPU has accessed the segment</li>
+            	<li>Granularity has a 0 for limit in 1 byte blocks, or 1 if limit is multiples of 4KB blocks</li>
+            	<li>Size indicates 16 bit mode if value is 0, or 32 bit protected mode if value is 1</li>
+        	</ul>
+       </section>
+        
+        <section id="32bit">
+            <h2>32bit Hello World</h2>
+            In 16 bit mode we could use 16 bit instructions, call BIOS functions via <a href="https://en.wikipedia.org/wiki/BIOS_interrupt_call">interrupts</a> and address up to 1 MB of memory. To note is that more memory could be accessed using <a href="https://en.wikipedia.org/wiki/X86_memory_segmentation">segment addressing</a>: in Intel architecture 16 bits, reserved registers are used to point at the start of predefined memory segments (code segment, data segment, stack segment, extra segment) and the memory is accessed giving an offset from this base address.<br>
+            We don't want to use the segmented addressing, and to access more memory we enable the A20 line. This means that we activate the 21st bit of any memory access: usually the number of addressing lines is equal to the base-two logarithm of the available physical addressing space, meaning that for 1MB (= 2^20) 20 lines (0 to 19) are enough. To access the next chunck of memory, the 21st line has to be activated using the instructions in lines 5 and 6, which make use of an interrupt call.<p>
+            The code starts as in the 16bit bootloader, by telling which registers to use and the offset of the output. Then we set the VGA mode with the interrupt instruction. To access the 32 bit registers we have to enter protected mode, and to do that we need to create a global descriptor table (GDT). The table itself is defined between lines 16 and 35, and it is loaded with the <i>lgdt</i> instruction at line 10. This instruction takes a pointer structure, which is defined from line 33: a 16 it field contains the GDT size, and a 32 bit pointer points to the structure itself. At lines 37 and 38 we define CODE_SEG and DATA_SEG, which are offsets pointing into the GDT that we will use later. Now in line 40 we tell nasm to get into 32 bit mode, and we make all segments point to DATA_SEG. To write "Hello world!" to the screen we can't directly call the BIOS anymore, so instead we write to the VGA text buffe, whose memory location is 0xb8000 (as seen in line 49). Writing to that buffer requires to set the background and foreground color and the ASCII character, as in the following scheme:
+            <div align="center"><img src="../images/projects/bootloader/vga.png" width="600px"></div>
+            The most significant bytes define the character and background colour as an int value from 0x0 to 0xF (<a href="https://en.wikipedia.org/wiki/Video_Graphics_Array#Color_palette">VGA colors</a>). The least significant byte defines an ASCII char. In the loop that starts at line 51 we iterate over the VGA buffer by setting the color and the char of the output with the values in $eax (colors) and $esi loaded in $al (string).
+
+            <pre class="brush: c">
+                bits 16     ; tell compiler this is 16 bit code
+                org 0x7C00  ; tell compiler the offset of the output
+
+                boot:
+                	mov ax, 0x2401
+                	int 0x15            ; enable A20 bit
+                	mov ax, 0x3
+                	int 0x10            ; set VGA text mode 3
+                	cli                 ; clear interrupts flag
+                	lgdt [gdt_pointer]  ; load the GDT table
+                	mov eax, cr0
+                	or eax,0x1          ; set protected mode bit on CPU register cr0
+                	mov cr0, eax
+                	jmp CODE_SEG:boot2  ; jump to the code segment
+
+                gdt_start:          ; define GDT
+                	dq 0x0
+                gdt_code:
+                	dw 0xFFFF       ; segment limit bits 0-15
+                	dw 0x0          ; base bits 0-15
+                	db 0x0          ; base bits 16-23
+                	db 10011010b    ; access byte
+                	db 11001111b    ; high 4 bits (flags) low 4 bits (limit 4 last bits)
+                	db 0x0          ; base bits 24-31
+                gdt_data:
+                	dw 0xFFFF       ; segment limit bits 0-15
+                	dw 0x0          ; base bits 0-15
+                	db 0x0          ; base bits 16-23
+                	db 10010010b    ; access byte
+                	db 11001111b    ; high 4 bits (flags) low 4 bits (limit 4 last bits)
+                	db 0x0          ; base bits 24-31
+                gdt_end:
+                gdt_pointer:
+                	dw gdt_end - gdt_start
+                	dd gdt_start
+
+                CODE_SEG equ gdt_code - gdt_start
+                DATA_SEG equ gdt_data - gdt_start
+
+                bits 32     ; tell compiler this is 32 bit code
+                boot2:
+                    mov ax, DATA_SEG ; tell all segments to point at the data segment
+                	mov ds, ax
+                	mov es, ax
+                	mov fs, ax
+                	mov gs, ax
+                	mov ss, ax
+                	mov esi, hello
+                	mov ebx, 0xb8000 ; VGA text buffer memory location
+
+                .loop:
+                	lodsb                   ; load byte at address si into al
+                	or al, al               ; al == 0?
+                	jz halt                 ; if al == 0 then jump to halt label
+                	or eax, 0x0100          ; mask $eax to get VGA color blue (== 1)
+                	mov word [ebx], ax
+                	add ebx, 2              ; loop over the VGA buffer
+                	jmp .loop
+
+                halt:
+                	cli	; clear interrupt flag
+                	hlt	; halt execution
+
+                hello: db "Hello world!", 0
+
+                times 510 - ($-$$) db 0   ; pad remaining 510 bytes with zeros
+                dw 0xAA55                 ; mark this 512 byte sector bootable
+            </pre>
+        </section>
+
+        <section id="crosscompile">
+            <h2>Cross Compiler</h2>
+            What we need now is a cross compiler, meaning a compiler that can create executables for a platform different from the one on which the compiler itself is running.
+            Let's install the needed packages (gcc, gmp, mpfr and mpc) and export gcc. We also export the paths where we will put the crosscompiled gcc.
+            <pre><code>sudo apt install libgmp3-dev libmpfr-dev libmpc-dev gcc
+                export CC=/usr/bin/gcc
+                export LD=/usr/bin/gcc
+                export PREFIX="/usr/local/i386elfgcc"
+                export TARGET=i386-elf
+                export PATH="$PREFIX/bin:$PATH"
+            </code></pre>
+            Now we can actually proceed in cross compiling the binutils and gcc:
+            <pre><code>mkdir /tmp/src
+                cd /tmp/src
+                curl -O http://ftp.gnu.org/gnu/binutils/binutils-2.32.tar.gz # If the link 404's, look for a more recent version
+                tar xf binutils-2.32.tar.gz
+                mkdir binutils-build
+                cd binutils-build
+                ../binutils-2.32/configure --target=$TARGET --enable-interwork --enable-multilib --disable-nls --disable-werror --prefix=$PREFIX 2>&1 | tee configure.log
+                sudo make all install 2>&1 | tee make.log
+                cd /tmp/src
+                curl -O https://ftp.gnu.org/gnu/gcc/gcc-9.1.0/gcc-9.10.tar.gz
+                tar xf gcc-9.1.0.tar.gz
+                mkdir gcc-build
+                cd gcc-build
+                ../gcc-9.1.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --disable-libssp --enable-languages=c --without-headers
+                make all-gcc 
+                make all-target-libgcc 
+                sudo make install-gcc 
+                sudo make install-target-libgcc 
+            </code></pre>
+            After all of this, the new tools should be in the /usr/local/i386elfgcc/bin folder. The trick of producing tools for a different architecture was done by passing the $TARGET argument when configuring the build.
+            <h3>Compilation</h3>
+            A compiler is a tool that translates a program written in a high level programming language to object code. Object code is a format midway human readable language and machine code. It still contains debugging information, labels, symbols and a lot of data that is not strictly necessary for execution.
+            To compile a program use gcc, and in our case remember to prepend the path to the just created version (stored in the $PREFIX variable). We use the -ffreestanding option so that the compiler doesn't assume the usual entry point at "main" and the existence of the standard library.
+            <pre><code>$PREFIX/i386-elf-gcc -ffreestanding -c function.c -o function.o</code></pre>
+            <h3>Linking</h3>
+            After compiling, we can link the object file to make it into an executable. It strips the information that is not needed and takes care of packing required libraries and of relocating code that assumes specific positions.
+            In this case we ask explicitly to place the function at address 0x0, and with the output format 'binary' we remove all of the metadata from the object file.
+            <pre><code>$PREFIX/i386-elf-ld -o function.bin -Ttext 0x0 --oformat binary -o function.o</code></pre>
+        </section>
+
+<section id="accessMemory">
+            <h2>512 bytes and more</h2>
+            The next step of making a loader is to make it use library functions. To do this, the functions have to be loaded in memory, and they will most probably take more space than the bootable 512 bytes we used until now. Therefore, we have to load more space from the disk: to do this we use the <i>int 0x13</i> <a href="https://en.wikipedia.org/wiki/INT_13H">interrupts</a>, which provide disk services. In particular, we can use the <i>ah=02</i> command to read sectors from a drive to a target location. What we are going to do is to use the same code as the previous step, but move the "Hello world!" string further into memory, so that we will have to load that from somewhere that is not in the default 512 bytes.<br>
+            The interrupt is prepared and called form line 10 to line 17: the disk number is implicitly loaded into $dl by the BIOS during startup, and we put it in memory at line 9. This means that we can load an additional 512 bytes from the second disk sector into memory. We have now to remember to pad the bootloader for 1024 bytes (line 82) so that we do not load uninitialized bytes from the disk. 
+
+             <pre class="brush: c">
+                bits 16     ; tell compiler this is 16 bit code
+                org 0x7c00  ; tell compiler the offset of the output
+
+                boot:
+                	mov ax, 0x2401
+                	int 0x15            ; enable A20 bit
+                	mov ax, 0x3
+                	int 0x10            ; set VGA text mode 3
+                	mov [disk],dl
+                	mov ah, 0x2         ; read sectors
+                	mov al, 1           ; amount of sectors to read
+                	mov ch, 0           ; cylinder index
+                	mov dh, 0           ; head index
+                	mov cl, 2           ; sector index
+                	mov dl, [disk]      ; disk index
+                	mov bx, copy_target ; target pointer
+                	int 0x13
+                	cli                 ; clear interrupts flag
+                	lgdt [gdt_pointer]  ; load the GDT table
+                	mov eax, cr0
+                	or eax,0x1
+                	mov cr0, eax        ; set protected mode bit on CPU register cr0
+                	mov ax, DATA_SEG    ; tell all segments to point at the data segment
+                	mov ds, ax
+                	mov es, ax
+                	mov fs, ax
+                	mov gs, ax
+                	mov ss, ax
+                	jmp CODE_SEG:boot2  ; jump to the code segment
+
+                gdt_start:          ; define GDT
+                	dq 0x0
+                gdt_code:
+                	dw 0xFFFF       ; segment limit bits 0-15
+                	dw 0x0          ; base bits 0-15
+                	db 0x0          ; base bits 16-23
+                	db 10011010b    ; access byte
+                	db 11001111b    ; high 4 bits (flags) low 4 bits (limit 4 last bits)
+                	db 0x0          ; base bits 24-31
+                gdt_data:
+                	dw 0xFFFF       ; segment limit bits 0-15
+                	dw 0x0          ; base bits 0-15
+                db 0x0          ; base bits 16-23
+                	db 10010010b    ; access byte
+                	db 11001111b    ; high 4 bits (flags) low 4 bits (limit 4 last bits)
+                	db 0x0          ; base bits 24-31
+                gdt_end:
+                gdt_pointer:
+                	dw gdt_end - gdt_start
+                	dd gdt_start
+
+                disk:
+                	db 0x0
+
+                CODE_SEG equ gdt_code - gdt_start
+                DATA_SEG equ gdt_data - gdt_start
+
+                times 510 - ($-$$) db 0 ; pad remaining 510 bytes with zeros
+                dw 0xAA55               ; mark this 512 byte sector bootable
+
+                copy_target:
+                bits 32     ; tell compiler this is 32 bit code
+
+                hello: db "Hello more than 512 bytes world!!",0
+
+                boot2:
+                	mov esi, hello
+                	mov ebx, 0xb8000    ; VGA text buffer memory location
+                .loop:
+                	lodsb               ; load byte at address si into al
+                	or al,al            ; al == 0?
+                	jz halt             ; if al == 0 then jump to halt label
+                	or eax,0x0F00       ; mask $eax to get VGA color
+                	mov word [ebx], ax
+                	add ebx,2           ; loop over the VGA buffer
+                	jmp .loop
+
+                halt:
+                	cli	; clear interrupt flag
+                	hlt	; halt execution
+
+                times 1024 - ($-$$) db 0   ; pad 1024 bytes with zeros
+            </pre>
+       </section>
+
+        <section id="cpp">
+            <h2>Load C++ functions</h2>
+            Instead of having our assembly code directly do the printing of our "Hello world!" string, we want a C++ function to do that and the assembly code only to load and run that function. Here is the function (to be saved in a .cpp file):
+            
+            <pre class="brush: c">
+                extern "C" void kmain(){
+                    const short color = 0x0F00;              // pick string color
+                    const char* hello = "Hello cpp world!";  // pick string content
+                    short* vga = (short*)0xb8000;            // pick VGA memory location
+                    for (int i = 0; i&lt;16; ++i)
+                         vga[i+80] = color | hello[i];        // put the chars in the VGA buffer
+                }
+            </pre>
+
+This method has to be compiled and linked. To note is that using the default gcc compiler might not work, as it assumes an instruction set and a calling policy that might not correspond to what we used. Moreover, we are emulating a 32 bit operating system, while most probably our physical machine is 64 bits. For these reasons, we need to use a cross compiler, which is a compiler that is able to create code executable by a platform different from the one where the compiler itself is running.<br> Finding and installing cross compilers is usually a pain, but luckily for linux we can pass an option to gcc so that it creates an executable for the correct architecture: <code>g++ -m32 -o kmain kmain.cpp</code><br>
+We need to tell gcc how to link the cpp and the asm files together, so that the asm code is positioned at the right offset (0x7C00) to have the 510th byte equal to 0xAA55 so that it is a valid bootsector. The C++ code has to be placed after that in the resulting file. To do this, we create an .ld file with the following content:
+<pre class="brush: c">
+    ENTRY(boot)
+    
+    OUTPUT_FORMAT("binary")
+    
+    SECTIONS {
+        . = 0x7c00;
+        .text :
+            {
+             *(.boot)
+             *(.text)
+            }
+
+        .rodata :
+            {
+             *(.rodata)
+            }
+
+        .data :
+            {
+             *(.data)
+            }
+
+        .bss :
+            {
+             *(.bss)
+            }
+    }
+</pre>
+On line 1 we say that the ontry point of the program is the <i>boot</i> symbol. Line 2 tells the compiler to output raw assembly directly (if not stated, it will output <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> format). Line 4 tells at which offset the output should start.<br>
+The last step is to modify the assembly so that the compiler knows what to do with it. On line 1 we put everything in the <i>.boot</i> section to make sure that it is placed first, and on lines 3 and 4 we define a <i>boot:</i> symbol for the linker to use as entry point. On line 12 we use the disk reading function to load more than one sector. From there on, the code is the same as the last section until the <i>halt</i> label on line 79. On line 80 we reserve 16 kilobytes for a kernel call stack, and on lines 81 and 82 we perform the actual call to our C++ method.
+
+<pre class="brush: c">
+    section .boot
+    bits 16
+    global boot
+
+    boot:
+    	mov ax, 0x2401
+    	int 0x15            ; enable A20 bit
+    	mov ax, 0x3
+    	int 0x10            ; set VGA text mode 3
+    	mov [disk],dl
+    	mov ah, 0x2         ; read sectors
+    	mov al, 6           ; amount of sectors to read
+    	mov ch, 0           ; cylinder index
+    	mov dh, 0           ; head index
+    	mov cl, 2           ; sector index
+    	mov dl, [disk]      ; disk index
+    	mov bx, copy_target ; target pointer
+    	int 0x13
+    	cli                 ; clear interrupts flag
+    	lgdt [gdt_pointer]  ; load the GDT table
+    	mov eax, cr0
+    	or eax,0x1
+    	mov cr0, eax        ; set protected mode bit on CPU register cr0
+    	mov ax, DATA_SEG    ; tell all segments to point at the data segment
+    	mov ds, ax
+    	mov es, ax
+    	mov fs, ax
+    	mov gs, ax
+    	mov ss, ax
+    	jmp CODE_SEG:boot2  ; jump to the code segment
+
+    gdt_start:          ; define GDT
+    	dq 0x0
+    gdt_code:
+    	dw 0xFFFF       ; segment limit bits 0-15
+    	dw 0x0          ; base bits 0-15
+    	db 0x0          ; base bits 16-23
+    	db 10011010b    ; access byte
+    	db 11001111b    ; high 4 bits (flags) low 4 bits (limit 4 last bits)
+    	db 0x0          ; base bits 24-31
+    gdt_data:
+    	dw 0xFFFF       ; segment limit bits 0-15
+    	dw 0x0          ; base bits 0-15
+    	db 0x0          ; base bits 16-23
+    	db 10010010b    ; access byte
+    	db 11001111b    ; high 4 bits (flags) low 4 bits (limit 4last bits)
+    	db 0x0          ; base bits 24-31
+    gdt_end:
+    gdt_pointer:
+    	dw gdt_end - gdt_start
+    	dd gdt_start
+
+    disk:
+    	db 0x0
+
+    CODE_SEG equ gdt_code - gdt_start
+    DATA_SEG equ gdt_data - gdt_start
+
+    times 510 - ($-$$) db 0 ; pad remaining 510 bytes with zeros
+    dw 0xAA55               ; mark this 512 byte sector bootable
+
+    copy_target:
+    bits 32     ; tell compiler this is 32 bit code
+
+    hello: db "Hello more than 512 bytes world!!",0
+
+    boot2:
+    	mov esi, hello
+    	mov ebx, 0xb8000    ; VGA text buffer memory location
+    .loop:
+    	lodsb               ; load byte at address si into al
+    	or al,al            ; al == 0?
+    	jz halt             ; if al == 0 then jump to halt label
+    	or eax,0x0F00       ; mask $eax to get VGA color
+    	mov word [ebx], ax
+    	add ebx,2           ; loop over the VGA buffer
+    	jmp .loop
+
+    halt:
+    	mov esp, kernel_stack_top
+    	extern kmain
+    	call kmain
+    	cli
+    	hlt
+
+    section .bss
+    align 4
+    kernel_stack_bottom: equ $
+    	resb 16384 ; == 16 KB
+    kernel_stack_top:
+</pre>
+We compile the assembly with nasm, and we compile the C++ and link it with g++:
+<pre class="brush: sh">
+    nasm -f elf32 asmBoot_cpp.asm -o asmBoot_cpp.o
+    g++ -m32 kmain.cpp asmBoot_cpp.o -o kernel.bin
+</pre>
+</section>
+
+        <!-- Sources -->
+        <section id="sources">
+            <blockquote>
+                <h3>Sources:</h3>
+                <a href="http://3zanders.co.uk/2017/10/13/writing-a-bootloader/">Writing a Bootloader</a> by Alex Parker<br>
+                <a href="https://en.wikipedia.org/wiki/Netwide_Assembler">Netwide Assembler</a> by Wikipedia<br>
+                <a href="https://en.wikipedia.org/wiki/QEMU">Quick Emulator</a> by Wikipedia<br>
+                <a href="https://www.lifewire.com/bios-basic-input-output-system-2625820">BIOS</a> by Lifewire<br>
+                <a href="https://www.lifewire.com/what-is-post-2625953">POST</a> by Lifewire<br>
+                <a href="https://en.wikipedia.org/wiki/X86_memory_segmentation"> Memory Segmentation</a>by Wikipedia<br>
+                <a href="https://wiki.osdev.org/A20_Line">A20 Line</a> by OSDev<br>
+                <a href="https://wiki.osdev.org/GDT">Global Descriptor Table</a> by OSDev
+				<a href="https://wiki.osdev.org/Segmentation">Segmentation</a> by OSDev
+				<a href="http://bottomupcs.com/virtual_addresses.xhtml">Virtual Addresses</a> by Ian Wienand
+            </blockquote>
+        </section>

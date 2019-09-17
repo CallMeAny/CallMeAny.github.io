@@ -1,0 +1,51 @@
+<!-- Scripts -->
+    <script src="CallMeAny/js/jquery.min.js"></script>
+    <script src="CallMeAny/js/jquery.poptrox.min.js"></script>
+    <script src="CallMeAny/js/skel.min.js"></script>
+    <script src="CallMeAny/js/util.js"></script>
+    <script src="CallMeAny/js/main.js"></script>
+    <script src="CallMeAny/js/simple-expand.js"></script>
+
+    <script type="text/javascript">
+        $(function() {
+            $('.expander').simpleexpand();
+        });
+    </script>
+
+    <script type="text/javascript">
+        $('a[href^="#"]').on('click', function(event) {
+            var target = $($(this).attr('href'));
+
+            if (target.length) {
+                event.preventDefault();
+                $('html, body').animate({
+                    scrollTop: target.offset().top
+                }, 750);
+            }
+        });
+    </script>
+
+    <script type="text/javascript">
+        $(function() {
+            var form = $('#ajaxMail');
+            var formMessage = $('#formMessages');
+
+            form.submit(event => {
+                event.preventDefault();
+
+                //var formData = $(form).serialize();
+                $.ajax({
+                        type: 'POST',
+                        url: $(form).attr('action'),
+                        data: {
+                            name: $("#name").val(),
+                            email: $("#email").val(),
+                            message: $("#message").val(),
+                            captcha: grecaptcha.getResponse()
+                        }
+                    })
+                    .done(data => alert('Success: thank you for your message'))
+                    .fail(data => alert('Fail: please retry'));
+            });
+        });
+    </script>

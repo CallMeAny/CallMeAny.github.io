@@ -1,0 +1,174 @@
+---
+layout: default
+title: Leviathan
+---
+
+            <!-- Intro -->
+            <section id="intro">
+                <img src="../images/projects/leviathan.jpg" width="100%" height="250px" />
+                <header class="major">
+                    <h2>Leviathan CTF</h2>
+                </header>
+                <a href="http://overthewire.org/wargames/leviathan/">This OverTheWire CTF</a> is a quite simple linux command line challenge, with a little bit of debugging. It is suggested for beginners both in Linux and in reverse engineering. It doesn't require to install anything, you only need a ssh connection to the target machine.
+                <p>
+                    <h2 align="center"><b>########## WARNING: SPOILERS ##########</b></h2>
+                    <h2 align="center"><b>##### Scrolling down shows solutions for the Leviathan CTF #####</b></h2>
+                </p>
+            </section>
+
+            <!--Content-->
+            <section>
+                <table>
+                    <tr>
+                        <td><a href="#leviathan0">Leviathan 00</a></td>
+                        <td><a href="#leviathan1">Leviathan 01</a></td>
+                        <td><a href="#leviathan2">Leviathan 02</a></td>
+                        <td><a href="#leviathan3">Leviathan 03</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#leviathan4">Leviathan 04</a></td>
+                        <td><a href="#leviathan5">Leviathan 05</a></td>
+                        <td><a href="#leviathan6">Leviathan 06</a></td>
+                        <td><a href="#leviathan7">Leviathan 07</a></td>
+                    </tr>
+                </table>
+            </section>
+            
+            <!--Intro-->
+            <section>
+                <h3>Intro</h3>
+                All the challenges can be accessed with ssh. The syntax is the following:<br>
+                <code>ssh leviathanX@leviathan.labs.overthewire.org -p 2223</code><br>
+                All the flags are in /etc/leviathan_pass/, so those are the files we should aim to read in each level. Obviously, we need to gain the right permissions first.<br>
+                In the machine there are a couple of tools already installed, in particular PEDA: this is a gdb extension that shows registers, assembly and stack automatically, reducing a lot of the usual pain when using gdb. To start it, run gdb as usual and then source to the peda.py file:<br>
+                <pre class="brush: sh">
+                    gdb --args filetoinspect param1 param2
+                    > source /usr/local/peda/peda.py
+                </pre>
+            </section>
+            
+            
+            <!--Level00-->
+            <a name="leviathan0"></a>
+            <section>
+                <h3>Leviathan 00</h3>
+                <h4>ssh leviathan0@leviathan.labs.overthewire.org -p 2223<br>
+                Password: leviathan0</h4>
+                The home folder contains a hidden folder, which contains a single file. We look into it to see if it contains anything labelled as flag for this level.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cd .backup/
+                    ls -alh
+                    bookmarks.html | grep leviathan
+                </pre>
+                <!-- FLAG: rioGegei8m -->
+            </section>
+            
+            <!--Level01-->
+            <a name="leviathan1"></a>
+            <section>
+                <h3>Leviathan 01</h3>
+                <h4>ssh leviathan1@leviathan.labs.overthewire.org -p 2223</h4>
+                The home folder contains an executable with suid, meaning (in a really short summary) that it will run with the permissions of the creator and not of the user. We can see that the creator has permissions to see the password file that we need, so we have to execute this file. If we give the right password, we will have a shell with proper permissions.<br>
+                We could use gdb to step through the execution, but the ltrace command shows immediately what we need, so we will take the easy way. After seeing the password from the string compare, we can run the program on its own and get a shell from which we can cat the file.
+                <blockquote>ltrace: this program runs the specified command and intercepts all library and system calls.</blockquote>
+                <pre class="brush: sh">
+                    ls -lah
+                    ltrace ./check [insert random password when prompted]
+                    > strcmp("AAA", "sex") 
+                    ./check [insert password 'sex' when prompted]
+                    cat /etc/leviathan_pass/leviathan2
+                </pre>
+                <!-- FLAG: ougahZi8Ta -->
+            </section>
+            
+            <!--Level02-->
+            <a name="leviathan02"></a>
+            <section>
+                <h3>Leviathan 02</h3>
+                <h4>ssh leviathan2@leviathan.labs.overthewire.org -p 2223</h4>
+                This challenge is based on a little bug in how the printfile executable works. The bug can be spotted after playing around a bit with filenames passed to the executable: ltracing shows how when passing a file with a space in its name, only the word before the space is used in the access() call.<br>
+                When trying to access the password file directly, we are warned that we can't access it. But we can exploit the bug by creating a symlink to that file called 'password', and then creating a file with the name 'password bug'. When trying to access 'password bug' with the executable, it will check permissions on 'password bug' without triggering the warning, and then go on and print 'password'.
+                <pre class="brush: sh">
+                    ls -lah
+                    ltrace ./printfile name space
+                    > access("name", 4)
+                    ln -s /etc/leviathan_pass/leviathan3 '/tmp/password'
+                    touch '/tmp/password bug'
+                    ./printfile '/tmp/password bug'
+                </pre>
+                <!-- FLAG: Ahdiemoo1j-->
+            </section>
+            
+            <!--Level03-->
+            <a name="leviathan03"></a>
+            <section>
+                <h3>Leviathan 03</h3>
+                <h4>ssh leviathan3@leviathan.labs.overthewire.org -p 2223</h4>
+                This challenge is really similar to the one in level 01. The only difference is that there is another string compare to try and confuse us.
+                <pre class="brush: sh">
+                    ls -lah
+                    ltrace ./level3 [insert random password when prompted]
+                    > strcmp("AAAA\n", "snlprintf\n")  
+                    ./level3 [insert password 'snlprintf' when prompted]
+                    cat /etc/leviathan_pass/leviathan4
+                </pre>
+                <!-- FLAG: vuH0coox6m-->
+            </section>
+
+            <!--Level04-->
+            <a name="leviathan04"></a>
+            <section>
+                <h3>Leviathan 04</h3>
+                <h4>ssh leviathan4@leviathan.labs.overthewire.org -p 2223</h4>
+                The flag in this challenge is not hidden, but encoded. After executing the file, we get a string of binary numbers. Checking their values we get hex numbers within the ASCII range, and from there on it's just a matter of looking up the ASCII table.
+                <pre class="brush: sh">
+                    ls -lah
+                    cd .trash
+                    ./bin
+                    > 01010100 01101001 01110100 01101000 00110100 01100011 01101111 01101011 01100101 01101001 00001010
+                    > 0x54 0x69 0x74 0x68 0x34 0x63 0x6F 0x6B 0x65 0x69 0x0A
+                </pre>
+                <!-- FLAG: Tith4cokei-->
+            </section>
+
+            <!--Level05-->
+            <a name="leviathan05"></a>
+            <section>
+                <h3>Leviathan 05</h3>
+                <h4>ssh leviathan5@leviathan.labs.overthewire.org -p 2223</h4>
+                When executing the file with ltrace, we can see that it is trying to open a file that does not exist. The only thing we need to do is create that file, with the content that we want, and to do that we use a symlink.
+                <pre class="brush: sh">
+                    ls -lah
+                    ltrace ./leviathan5
+                    > fopen("/tmp/file.log", "r")
+                    ln -s /etc/leviathan_pass/leviathan6 /tmp/file.log
+                    ./leviathan5
+                </pre>
+                <!-- FLAG: UgaoFee4li-->
+            </section>
+
+            <!--Level06-->
+            <a name="leviathan06"></a>
+            <section>
+                <h3>Leviathan 06</h3>
+                <h4>ssh leviathan6@leviathan.labs.overthewire.org -p 2223</h4>
+                In this challenge ltrace is not enough because the compare is done with a value in memory, and not between strings. The atoi() method just reads the input string and casts it to integer, which is stored in eax as hex value after the methd returns. A few instructions after we have a compare between that value and a value stored in memory, which is our password. We only have to give that password as input, in decimal format.
+                <pre class="brush: sh">
+                    ls -lah
+                    gdb --args leviathan6 1111
+                    > atoi(4444) -> eax = 0x1BD3
+                    > cmp eax, 0x1BD3
+                </pre>
+                <!-- FLAG: ahy7MaeBo9-->
+            </section>
+            
+            <!--Level07-->
+            <a name="level07"></a>
+            <section>
+                <h3>Level 07</h3>
+                <h4>ssh leviathan7@leviathan.labs.overthewire.org -p 2223</h4>
+                Congratulations, no more challenges. Leviathan is complete.
+            </section>
+

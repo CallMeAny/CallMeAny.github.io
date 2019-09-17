@@ -1,0 +1,237 @@
+---
+layout: default
+title: Security Headers
+---
+            <section id="intro">
+                <img src="../images/projects/secHead.jpg" width="100%" height="250px">
+                <header class="major">
+                    <h2>Secuirity Headers</h2>
+                </header>
+                This Capture the Flag machine introduces sysadmin Linux concepts. As mentioned in the <a href="https://exploit-exercises.com/nebula/">website</a>, we will touch SUID fils, permissions, race conditions and other topics. I will try to explain all the topics as I encountered them in my path through the levels of the CTF. For each level there will be a small intro on the required topics, then the steps to get the flag.
+            </section>
+
+            <!--htaccess-->
+            <section>
+                <h3>.htaccess</h3>
+                The <i>.htaccess</i> files are part of Apache servers, and provide a way to make configuration changes to the single directories. The configurations will be applied to the directory where the file is stored, and to all of its subdirectories.<br>
+                Creating this file is the most common option when you don't have access to the main Apache configuration file, for example when you are using a third party hosting service. To note is using the <i>.htaccess</i> file will have performance consequences, because it will be loaded everytime a document is requested, and the system has to look for it in the current folder and in every superfolder.<br>
+                More details can be found at <a href="http://httpd.apache.org/docs/2.2/howto/htaccess.html">http://httpd.apache.org/docs/2.2/howto/htaccess.html</a>.
+                <p style="margin-top: 20px">
+                In this post we will talk about security headers, that could be implemented also as HTML meta tags (at least for the CSP header) in the document head, using the following model:<br>
+                    <code>&lt;meta http-equiv="Content-Security-Policy" content="default-src 'self';"&gt;</code><br>
+                These headers should be put as the first ones in the <i>&lt;head&gt;</i> tag, so that they will be the first one executed, therefore enforcing security. However this solution is not the best, as the code will be visible to the end user.
+            </section>
+               
+            <!--HTTPS-->
+            <section>
+                <h3>HTTPS</h3>
+                HTTPS, which stands for HTTP Secure, is basically HTTP over TLS (or its predecessor SSL): this ensures that the communications between server and client are encrypted, preventing Man-in-the-Middle eavesdropping attacks. You do want your website to route all its traffic through HTTPS.<br>
+                First thing to do is to get a valid certificate. You can ask to your hosting provider, or if you have root access to your server you can get one for example by following the instructions at <a href="https://www.letsencrypt.com">Letsencrypt</a>.<br>
+                When your certificate is in place, you have to convince the browser that it should only communicate with the server using HTTPS. To do this, we use HTTP Strict Transport Security (HSTS): basically, we redirect all HTTP connections to the corrisponding HTTPS URLs. What you need to do is to put the following lines at the top of the .htaccess file:<br>
+                <pre>
+                <code>
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+                </code>
+                </pre>
+            </section>
+            
+            <!--X-Frame-Options-->
+            <section>
+                <h3>X-Frame-Options</h3>
+                The XFO header is meant to protect agains clickjacking attacks. This means that the browser is told whether it should display content of frames (or iframes) transmitted by other webpages or not. This is nice in the sense that it prevents a frame from a malicious third party from taking over for example the sessions of the user in case the user is logged in in some interesting service.<br>
+                Values accepted for this header are <b>DENY</b>, so that your website can't be framed, <b>SAMEORIGIN</b> meaning that you can frame your own site, or <b>ALLOW-FROM https://...</b>, where you can specify which sites are allowed to frame your site.<br>
+                <pre>
+                <code>Header always set X-Frame-Options DENY</code>
+                </pre>
+            </section>
+            
+            <!--X-Content-Type-Options-->
+            <section>
+                <h3>X-Content-Type-Options</h3>
+                This header has only one possible value, <b>nosniff</b>. It prevents browsers (Chrome, IE) from sniffing mime types.<br>
+                This header is useful to prevent objects from being treated as different content-type with respect to what they really are, for example a camouflaged executable.<br>
+                One important point: this header will block also your own content in case it uses bad content-type headers (and some js libraries do that even though it is a bad idea). So if adding this header breaks your functionalities, you know where to look for the cause of the problem.<br>
+                <pre>
+                <code>Header always set X-Content-Type-Options "nosniff"</code>
+                </pre>
+            </section>
+            
+            <!--X-XSS-Protection-->
+            <section>
+                <h3>X-XSS-Protection</h3>
+                Protectin agains XSS (Cross-Site Scripting) is achieved by enabling the protection and instructing the browser to not load the response if it detects an attack. This second part of the header can be omitted by not using the <b>mode=block</b> instruction.<br>
+                As a quick reminder, an XSS attack is executed by injecting client-side scripts into web pages that are then loaded by the victims.
+                <pre>
+                <code>Header always set X-XSS-Protection "1; mode=block"</code>
+                </pre>
+            </section>
+            
+            <!--Strict-Transport-Security-->
+            <section>
+                <h3>Strict-Transport-Security</h3>
+                This is where the HSTS mentioned in the HTTPS section comes into play. Instead of using 30x response codes to redirect a HTTP request to a HTTPS one, we can directly tell the browser that all the connections have to be done using HTTPS, even if they are trying to use HTTPS.<br>
+                By setting the following policy we enforce TLS on ythe website and on all of its subdomains for a year. The <b>env</b> parameter is used to avoid sending this header over HTTP.<br>
+                <pre>
+                <code>Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS</code>
+                </pre>
+                
+            </section>
+            
+            <!--Referrer-Policy-->
+            <section>
+                <h3>Referrer-Policy</h3>
+                A referrer is a part of a reques header that contains information about the client. In particular, when the client clicks on a link, the request sent to the website pointed to by the link will receive information about where the user is coming from, meaning about where the link originated.<br>
+                With the Referrer Policy header we can control the information that is sent in this header. In particular, the following options are possible to decide what is stored in the header:<p>
+                
+                <div class="table-wrapper">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td><b>[empty string]</b></td>
+                                <td>The website itself doesn't define a policy and the browser should decide alone what to send.</td>
+                            </tr>
+                            <tr>
+                                <td><b>no-referrer</b></td>
+                                <td>The browser will never send the header with requests made from your site or from links hosted on your site.</td>
+                            </tr>
+                            <tr>
+                                <td><b>no-referrer-when-downgrade</b></td>
+                                <td>The referrer will not be sent when moving from HTTPS to HTTP, but it will send it from HTTP, from all the pages.</td>
+                            </tr>
+                            <tr>
+                                <td><b>same-origin</b></td>
+                                <td>The referrer will be sent only if the source and the destination are on the same origin, otherwise no info will be sent.</td>
+                            </tr>
+                            <tr>
+                                <td><b>origin</b></td>
+                                <td>The header will always be sent, but containing only the origin without additional path information.</td>
+                            </tr>
+                            <tr>
+                                <td><b>strict-origin</b></td>
+                                <td>As the one above, but using  HTTPS.</td>
+                            </tr>
+                            <tr>
+                                <td><b>origin-when-cross-origin</b></td>
+                                <td>The full URL is sent when the destination is on the same origin, otherwise only the origin with no additional path will be sent.</td>
+                            </tr>
+                            <tr>
+                                <td><b>strict-origin-when-cross-origin</b></td>
+                                <td>As the one above, but no information sent if moving from HTTPS to HTTP.</td>
+                            </tr>
+                            <tr>
+                                <td><b>unsafe-url</b></td>
+                                <td>The complete path will be sent in all the cases.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                Which header to use is up the the specific needs, but it is a good idea to stay away from the <b>unsafe-url</b> and to try as much as possible to use the <b>strict</b> options so that HTTPS is enforced wherever possible.<br>
+                
+                <pre>
+                <code>Header always set Referrer-Policy strict-origin</code>
+                </pre>
+            </section>
+            
+            <!--Content-Security-Policy-->
+            <section>
+                <h3>Content-Security-Policy</h3>
+                With this header we can control exactly from which sources the browser will load content for our website. It allows us to describe from where each type of content should be accepted, and will prevent from loading anything coming from a non declared source. In this way, we can protect agains XSS, for example from an unwanted js library loading in a crafted comment in the page.<br>
+                There are a lot of different elements that can be controlled, the following list is taken by the <a href="https://www.owasp.org/index.php/Content_Security_Policy">OWASP</a> website:<p>
+                
+                <div class="table-wrapper">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td><b>default-src</b></td>
+                                <td>Define loading policy for all resources type in case of a resource type dedicated directive is not defined (fallback).</td>
+                            </tr>
+                            <tr>
+                                <td><b>script-src</b></td>
+                                <td>Define which scripts the protected resource can execute</td>
+                            </tr>
+                            <tr>
+                                <td><b>object-src</b></td>
+                                <td>Define from where the protected resource can load plugins</td>
+                            </tr>
+                            <tr>
+                                <td><b>style-src</b></td>
+                                <td>Define which styles (CSS) the user applies to the protected resource</td>
+                            </tr>
+                            <tr>
+                                <td><b>img-src</b></td>
+                                <td>Define from where the protected resource can load images</td>
+                            </tr>
+                            <tr>
+                                <td><b>media-src</b></td>
+                                <td>Define from where the protected resource can load video and audio</td>
+                            </tr>
+                            <tr>
+                                <td><b>frame-src</b></td>
+                                <td>Define from where the protected resource can embed frames</td>
+                            </tr>
+                            <tr>
+                                <td><b>font-src</b></td>
+                                <td>Define from where the protected resource can load fonts</td>
+                            </tr>
+                            <tr>
+                                <td><b>connect-src</b></td>
+                                <td>Define which URIs the protected resource can load using script interfaces</td>
+                            </tr>
+                            <tr>
+                                <td><b>form-action</b></td>
+                                <td>Define which URIs can be used as the action of HTML form elements</td>
+                            </tr>
+                            <tr>
+                                <td><b>sandbox</b></td>
+                                <td>Specifies an HTML sandbox policy that the user agent applies to the protected resource</td>
+                            </tr>
+                            <tr>
+                                <td><b>script-nonce</b></td>
+                                <td>Define script execution by requiring the presence of the specified nonce on script elements</td>
+                            </tr>
+                            <tr>
+                                <td><b>plugin-types</b></td>
+                                <td>Define the set of plugins that can be invoked by the protected resource by limiting the types of resources that can be embedded</td>
+                            </tr>
+                            <tr>
+                                <td><b>reflected-xss</b></td>
+                                <td>Instructs a user agent to activate or deactivate any heuristics used to filter or block reflected cross-site scripting attacks, equivalent to the effects of the non-standard X-XSS-Protection header</td>
+                            </tr>
+                            <tr>
+                                <td><b>report-uri</b></td>
+                                <td>Specifies a URI to which the user agent sends reports about policy violation</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                When defining the policy, for each of the elements in the table it is possible to define what are the allowed sources. To do so, it is enough to list them after declaring the element. Multiple elements can be declared one after the other by using semicolumns.<br>
+                Useful parameters are the following:
+                
+                <ul>
+                    <li><b>none</b> completely blocks the use of the resource.</li>
+                    <li><b>self</b> allows from the current origin (but not from subdomains).</li>
+                    <li><b>unsafe-inline</b> accepts the use of inline styling and scripting (CSS, JS).</li>
+                    <li><b>unsafe-eval</b> accepts methods like eval().</li>
+                </ul>
+                
+                How to really create a CPS? There are automated tools, like the one you can find at <a href="https://report-uri.com/home/generate">ReportURI</a>. However especially if the target website is not too complex, writing one is not impossible. The suggestion is to start by setting <b>default-src 'none';</b> (be advised that after this almost nothing on your website will work properly), and build from there. To see what is blocked, open the dev tools of your browser and look at the console: it will tell which elements can't be loaded, and you can start picking from there what is required in your CSP. Another hint: if you want to write the policy on multiple lines on your .htaccess file, use the backslash at the end of the lines otherwise you will get errors.<br>
+                <pre>
+                <code>Header always set Content-Security-Policy "default-src 'none' ;"</code>
+                </pre>
+                
+            </section>
+            
+            <!-- Sources -->
+            <section>
+                <blockquote>
+                    <h3>Sources:</h3>
+                    <a href="https://danielnixon.org/http-security-headers/">HTTP Security Headers</a> by Daniel Nixon<br>
+                    <a href="https://scotthelme.co.uk/hardening-your-http-response-headers/">Hardening your HTTP response headers</a> by Scott Helme<br>
+                    <a href="https://securityheaders.io">SecurityHeaders.io</a> for testing<br>
+                </blockquote>
+            </section>
+

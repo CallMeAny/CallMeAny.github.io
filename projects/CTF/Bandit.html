@@ -1,0 +1,683 @@
+---
+layout: default
+title: Binary Bomb
+---
+
+            <!-- Intro -->
+            <section id="intro">
+                <img src="../images/projects/bandit.jpg" width="100%" height="250px" />
+                <header class="major">
+                    <h2>Bandit CTF</h2>
+                </header>
+                <a href="http://overthewire.org/wargames/bandit/">This OverTheWire CTF</a> is a quite simple linux command line challenge, with a little bit of debugging. It is suggested for beginners both in Linux and in reverse engineering. It doesn't require to install anything, you only need a ssh connection to the target machine.
+                <p>
+                    <h2 align="center"><b>########## WARNING: SPOILERS ##########</b></h2>
+                    <h2 align="center"><b>##### Scrolling down shows solutions for the Bandit CTF #####</b></h2>
+                </p>
+            </section>
+
+            <!--Content-->
+            <section>
+                <table>
+                    <tr>
+                        <td><a href="#bandit0">Bandit 00</a></td>
+                        <td><a href="#bandit1">Bandit 01</a></td>
+                        <td><a href="#bandit2">Bandit 02</a></td>
+                        <td><a href="#bandit3">Bandit 03</a></td>
+                        <td><a href="#bandit4">Bandit 04</a></td>
+                        <td><a href="#bandit5">Bandit 05</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#bandit6">Bandit 06</a></td>
+                        <td><a href="#bandit7">Bandit 07</a></td>
+                        <td><a href="#bandit8">Bandit 08</a></td>
+                        <td><a href="#bandit9">Bandit 09</a></td>
+                        <td><a href="#bandit10">Bandit 10</a></td>
+                        <td><a href="#bandit11">Bandit 11</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#bandit12">Bandit 12</a></td>
+                        <td><a href="#bandit13">Bandit 13</a></td>
+                        <td><a href="#bandit14">Bandit 14</a></td>
+                        <td><a href="#bandit15">Bandit 15</a></td>
+                        <td><a href="#bandit16">Bandit 16</a></td>
+                        <td><a href="#bandit17">Bandit 17</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#bandit18">Bandit 18</a></td>
+                        <td><a href="#bandit19">Bandit 19</a></td>
+                        <td><a href="#bandit20">Bandit 20</a></td>
+                        <td><a href="#bandit21">Bandit 21</a></td>
+                        <td><a href="#bandit22">Bandit 22</a></td>
+                        <td><a href="#bandit23">Bandit 23</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#bandit24">Bandit 24</a></td>
+                        <td><a href="#bandit25">Bandit 25</a></td>
+                        <td><a href="#bandit26">Bandit 26</a></td>
+                        <td><a href="#bandit27">Bandit 27</a></td>
+                        <td><a href="#bandit28">Bandit 28</a></td>
+                        <td><a href="#bandit29">Bandit 29</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#bandit30">Bandit 30</a></td>
+                        <td><a href="#bandit31">Bandit 31</a></td>
+                        <td><a href="#bandit32">Bandit 32</a></td>
+                        <td><a href="#bandit33">Bandit 33</a></td>
+                    </tr>
+                </table>
+            </section>
+            
+            <!--Intro-->
+            <section>
+                <h3>Intro</h3>
+                All the challenges can be accessed with ssh. The syntax is the following:<br>
+                <code>ssh banditX@bandit.labs.overthewire.org -p 2220</code><br>
+                In the machine there are a couple of tools already installed, in particular PEDA: this is a gdb extension that shows registers, assembly and stack automatically, reducing a lot of the usual pain when using gdb. To start it, run gdb as usual and then source to the peda.py file:<br>
+                <pre class="brush: sh">
+                    gdb --args filetoinspect param1 param2
+                    > source /usr/local/peda/peda.py
+                </pre>
+            </section>
+            
+            
+            <!--Level00-->
+            <a name="bandit0"></a>
+            <section>
+                <h3>Bandit 00</h3>
+                <h4>ssh bandit0@bandit.labs.overthewire.org -p 2220<br>
+                Password: bandit0</h4>
+                The home folder contains a readme file that we can simply open:
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cat readme
+                </pre>
+                <!-- FLAG: boJ9jbbUNNfktd78OOpsqOltutMc3MY1 -->
+            </section>   
+            
+            <!--Level01-->
+            <a name="bandit1"></a>
+            <section>
+                <h3>Bandit 01</h3>
+                <h4>ssh bandit1@bandit.labs.overthewire.org -p 2220</h4>
+                The home folder contains a file called -. It is slightly tricky to realize it is acutally there, and to open it we can't use just the dash but we have to pass the location ./-
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    file ./-
+                    > ASCII text
+                    cat ./-
+                </pre>
+                <!-- FLAG: CV1DtqXWVFXTvM2F0k09SHz0YwRINYA9 -->
+            </section> 
+
+            <!--Level02-->
+            <a name="bandit2"></a>
+            <section>
+                <h3>Bandit 02</h3>
+                <h4>ssh bandit2@bandit.labs.overthewire.org -p 2220</h4>
+                The name of the file is 'spaces in this filename'. To overcome this we can go the easy way and just use tab competion, or escape the spaces in the name with the '\' chatacter.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cat spaces\ in\ this\ filename 
+                </pre>
+                <!-- FLAG: UmHadQclWmgdLOKQ3YNgjWxGoRMb5luK -->
+            </section> 
+
+            <!--Level03-->
+            <a name="bandit3"></a>
+            <section>
+                <h3>Bandit 03</h3>
+                <h4>ssh bandit3@bandit.labs.overthewire.org -p 2220</h4>
+                A folder contains a hidden file that we have to read. Per default, hidden files have a name that starts with '.'. After going into the folder we could just use that for tab completion, but the parameters that we use for the <i>ls</i> command already show us the complete name.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cd inhere
+                    ls -lah
+                    cat .hidden
+                </pre>
+                <!-- FLAG: pIwrPrtPN36QITSp3EQaw936yaFoFgAB -->
+            </section>
+
+            <!--Level04-->
+            <a name="bandit4"></a>
+            <section>
+                <h3>Bandit 04</h3>
+                <h4>ssh bandit4@bandit.labs.overthewire.org -p 2220</h4>
+                In the given folder there is a bunch of files, and only one of them is readable. To find out which one, we use the <i>file</i> command, that tells us what kind of file we are handling. We have to give the path as the names start with a dash, and we can check all the files at once using the '*' char, which tells to go through all the files that follow the given pattern.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cd inhere
+                    file ./-file*
+                    cat ./-file07
+                </pre>
+                <!-- FLAG: koReBOKuIDDepwhWk7jZC0RTdopnAYKh -->
+            </section>
+
+            <!--Level05-->
+            <a name="bandit5"></a>
+            <section>
+                <h3>Bandit 05</h3>
+                <h4>ssh bandit5@bandit.labs.overthewire.org -p 2220</h4>
+                Not only a bunch of files, but also a bunch of folders in which to look. However, we have enough informations to uniquely identify the file: it is human-readable, 1033 bytes in size and not executable.<br>
+                What we do is <i>find</i> the files: instead of giving a specific pattern we look for everything, asking to print out all the details. We pipe this output into grep, filtering out for the file size. We are lucky, and only one file corresponds to our target.            
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cd inhere
+                    find . -print -ls | grep 1033
+                    cat ./maybehere07/.file2
+                </pre>
+                <!-- FLAG: DXjZPULLxYr17uwoI01bNLQbtFemEgo7 -->
+            </section>
+
+            <!--Level06-->
+            <a name="bandit6"></a>
+            <section>
+                <h3>Bandit 06</h3>
+                <h4>ssh bandit6@bandit.labs.overthewire.org -p 2220</h4>
+                This time the file is 'somewhere on the server'. What we know is that is it is owned by user bandit7, owned by group bandit6 and 33 bytes in size.<br>
+                The approach is the same as the last challenge, we just pipe the output multiple times to filter it down.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cd /
+                    find . -print -ls | grep bandit7 | grep bandit6
+                    cat ./var/lib/dpkg/info/bandit7.password
+                </pre>
+                <!-- FLAG: HKBPTKQnIay4Fw76bEy8PVxKEDQRKTzs -->
+            </section>
+
+            <!--Level07-->
+            <a name="bandit7"></a>
+            <section>
+                <h3>Bandit 07</h3>
+                <h4>ssh bandit7@bandit.labs.overthewire.org -p 2220</h4>
+                We have a file containing a lot of data, but we know that our flag is stored next to the word 'millionth'. We can therefore cat the file and grep for the keyword.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cat data.txt | grep millionth
+                </pre>
+                <!-- FLAG: cvX2JJa4CFALtqS87jk27qwqGhBM9plV -->
+            </section>
+
+            <!--Level08-->
+            <a name="bandit8"></a>
+            <section>
+                <h3>Bandit 08</h3>
+                <h4>ssh bandit8@bandit.labs.overthewire.org -p 2220</h4>
+                Again a file with lot of data, and the only hint is that our flag is the only one appearing exactly once.<br>
+                What we do is use the command <i>sort</i> to output the content of data.txt in alphabetical order, and then pipe this output to the command <i>uniq</i>. By giving the -u parameter to uniq, the output will be the only line that is not repeated. To note is that uniq only works on adjacent lines (meaning sorted input).
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    sort data.txt | uniq -u
+                </pre>
+                <!-- FLAG: UsvVyFSfZZWbi6wgC7dAFyFuR6jQQUhR -->
+            </section>
+
+            <!--Level09-->
+            <a name="bandit9"></a>
+            <section>
+                <h3>Bandit 09</h3>
+                <h4>ssh bandit9@bandit.labs.overthewire.org -p 2220</h4>
+                This file looks weird, and using <i>file</i> confirms that it is binary data. However, we know that there are human readable strings: to collect them we can use the <i>strings</i> command, and pipe the output to a grep to look for the '===' chars that mark the flag.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    file data.txt
+                    strings data.txt | grep ===
+                </pre>
+                <!-- FLAG: truKLdjsbJ5g7yyJ2X2R0o3a5HQJFuLk -->
+            </section>
+
+            <!--Level10-->
+            <a name="bandit10"></a>
+            <section>
+                <h3>Bandit 10</h3>
+                <h4>ssh bandit10@bandit.labs.overthewire.org -p 2220</h4>
+                The data.txt file contains a base64 encoded string. It is enough to use <i>base64 -d</i> on it to decode the content.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    base64 -d data.txt
+                </pre>
+                <!-- FLAG: IFukwKGsFW8MOq3IRFqrxE1hxTNEbUPR -->
+            </section>
+
+            <!--Level11-->
+            <a name="bandit11"></a>
+            <section>
+                <h3>Bandit 11</h3>
+                <h4>ssh bandit11@bandit.labs.overthewire.org -p 2220</h4>
+                This time in data.txt we find a rot13 encoded string. This just means that every letter has been substituted with the one that comes 13 steps after in the alphabet.<br>
+                To shift the letters back, we can use the <i>tr</i> command: as first parameter we give our alphabet, and as second parameter the corresponding alphabet with which to substitute the input. Each letter in the input will be swapped with the corresponding letter in the output.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    cat data.txt | tr '[a-zA-Z]' '[n-za-mN-ZA-M]'
+                </pre>
+                <!-- FLAG: 5Te8Y4drgCRfCx8ugdwuEX8KFC6k2EUu -->
+            </section>
+
+            <!--Level12-->
+            <a name="bandit12"></a>
+            <section>
+                <h3>Bandit 12</h3>
+                <h4>ssh bandit12@bandit.labs.overthewire.org -p 2220</h4>
+                We receive a file that is a hexdump of something that has been compressed multiple times with multiple tools. We first rebuild the original file using <i>xxd -r</i>, which reverses the hexdump, then in a loop we check the format of the file, we rename the file properly and we call the tool to decompress it.<br>
+                We work in a dedicated folder that we create in /tmp/, so that we have writing permissions and the system stays clean.
+                <br>
+                <pre class="brush: sh">
+                    xxd -r data.txt /tmp/work/data
+                    cd /tmp/work
+                    file data [gzip archive]
+                    mv data data.gz
+                    gunzip data.gz
+                    file data [bzip2 archive]
+                    mv data data.bz2
+                    bzip2 -d data.bz2 
+                    file data [gzip archive]
+                    mv data data.gz
+                    gunzip data.gz 
+                    file data [tar archive]
+                    mv data data.tar
+                    tar -xvf data.tar 
+                    file data5.bin [tar archive]
+                    mv data5.bin data5.bin.tar
+                    tar -xvf data5.bin.tar 
+                    file data6.bin [bzip archive]
+                    mv data6.bin data6.bin.bz2
+                    bzip2 -d data6.bin.bz2 
+                    file data6.bin [tar archive]
+                    mv data6.bin data6.bin.tar
+                    tar -xvf data6.bin.tar 
+                    file data8.bin [gzip archive]
+                    mv data8.bin data8.bin.gz
+                    gunzip data8.bin.gz 
+                    file data8.bin [ASCII text]
+                    cat data8.bin 
+                </pre>
+                <!-- FLAG: 8ZjyCRiBWFYkneahHwxCv3wb2a1ORpYL -->
+            </section>
+
+            <!--Level13-->
+            <a name="bandit13"></a>
+            <section>
+                <h3>Bandit 13</h3>
+                <h4>ssh bandit13@bandit.labs.overthewire.org -p 2220</h4>
+                We have to look for the flag stored in /etc/bandit_pass/bandit14. We don't have the rights for that file, but we get a private SSH key so that we can login in the next level as the right user.<br>
+                We can either cat the private key, save it locally and change its permission so that only the current user can access it; or just access bandit14 directly from within bandit 13. The command to use ssh with a private key is <i>ssh -i [path to key]</i>
+                <br>
+                <pre class="brush: sh">
+                    ssh -i sshkey.private bandit14@localhost
+                    cat /etc/bandit_pass/bandit14
+                </pre>
+                <!-- FLAG: 4wcYUJFw0k0XLShlDzztnTBHiqxU3b3e -->
+            </section>
+
+            <!--Level14-->
+            <a name="bandit14"></a>
+            <section>
+                <h3>Bandit 14</h3>
+                <h4>ssh bandit14@bandit.labs.overthewire.org -p 2220</h4>
+                We are instructed that to get the new flag we have to submit the old one on localhost, on port 30000. For that we can use netcat: <i>nc [ip address] [port]</i>
+                <br>
+                <pre class="brush: sh">
+                    nc localhost 30000 [paste the last flag after connection]
+                </pre>
+                <!-- FLAG: BfMYroe26WYalil77FoDi9qh59eK5xNr -->
+            </section>
+
+            <!--Level15-->
+            <a name="bandit15"></a>
+            <section>
+                <h3>Bandit 15</h3>
+                <h4>ssh bandit15@bandit.labs.overthewire.org -p 2220</h4>
+                The idea is exactly the same as in the last challenge: submit the last flag on localhost on port 30000. The only difference is that we need to use ssl for encryption. Netcat does not provide it, but ncat does and the command is basically the same.
+                <br>
+                <pre class="brush: sh">
+                    ncat --ssl localhost 30001 [paste the last flag after connection]
+                </pre>
+                <!-- FLAG: cluFn7wTiGryunymYOu4RcffSxQluehd -->
+            </section>
+
+            <!--Level16-->
+            <a name="bandit16"></a>
+            <section>
+                <h3>Bandit 16</h3>
+                <h4>ssh bandit16@bandit.labs.overthewire.org -p 2220</h4>
+                We have an interval of ports that might or might not be open, and one of them will be open and waiting for an ssl connection. We have to find out which one, and send the current password, if it's the correct one we will get credentials instead of a mirrored input.<br>
+                To find out who is open to our connection we nmap the port range. The scan returns only two ports listening, and therefore we ssl-ncat into both of them and test which one will give the new flag after inputting the current one. With a more aggressive nmap (using the -A option) we see directly which port is just echoing whatever is sent to it, and which one is actually returning content.
+                <br>
+                <pre class="brush: sh">
+                    nmap -A localhost -p 31000-32000
+                    ncat --ssl localhost 31790 [paste the last flag after connection]
+                </pre>
+                <!-- FLAG: SSH KEY -->
+            </section>
+
+            <!--Level17-->
+            <a name="bandit17"></a>
+            <section>
+                <h3>Bandit 17</h3>
+                <h4>ssh bandit17@bandit.labs.overthewire.org -p 2220</h4>
+                We receive two files, and we know that the only difference between them is the flag: a line in the old file has been updated with the new flag. To find it it is enough to diff the files.<br>
+                As the diff gives both the old and the new line, to be sure which one has been removed and which one has been inserted we can just cat the new file and try to grep with what we think is the new flag.
+                <br>
+                <pre class="brush: sh">
+                    diff passwords.new passwords.old
+                </pre>
+                <!-- FLAG: kfBf3eYk5BPBRzwjqutbbfE887SVc5Yd -->
+            </section>
+
+            <!--Level18-->
+            <a name="bandit18"></a>
+            <section>
+                <h3>Bandit 18</h3>
+                <h4><s>ssh bandit18@bandit.labs.overthewire.org -p 2220</s></h4>
+                We can't login in the machine, but we know exactly what we are looking for: a file called readme in the home directory. We can simply copy it to the local machine and read it locally.
+                <br>
+                <pre class="brush: sh">
+                    [Do not ssh into bandit18, execute this locally]
+                    scp -P 2220 bandit18@bandit.labs.overthewire.org:~/readme flag18
+                    cat flag18
+                </pre>
+                <!-- FLAG: IueksS7Ubh8G3DCwVzrTd8rAVOwq3M5x -->
+            </section>
+
+            <!--Level19-->
+            <a name="bandit19"></a>
+            <section>
+                <h3>Bandit 19</h3>
+                <h4><s>ssh bandit19@bandit.labs.overthewire.org -p 2220</s></h4>
+                In this challenge we finally encounter the infamous suid flag. A file with this flag can be run by a normal user but will execute with the permissions of its owner (this is a brutal summary of suid. You can read more on <a href="http://en.wikipedia.org/wiki/Setuid">wiki</a> about it).<br>
+                When executing the file we find in the machine, it tells us it will run whatever command we pass to it. With <i>ls -lah</i> we see that the owner is bandit20: this means that if we cat the password file, we will actually have the permissions required to read it.
+                <br>
+                <pre class="brush: sh">
+                    ls -lah
+                    ./bandit20-do cat /etc/bandit_pass/bandit20
+                </pre>
+                <!-- FLAG: GbKksEFF4yrVs6il55v6gwY5aVje5f0j -->
+            </section>
+
+            <!--Level20-->
+            <a name="bandit20"></a>
+            <section>
+                <h3>Bandit 20</h3>
+                <h4><s>ssh bandit20@bandit.labs.overthewire.org -p 2220</s></h4>
+                For this challenge we need two active ssh connections to bandit20: on one we will start a netcat listener, and on the other we will execute the given file.<br>
+                What the file does is connect to a listener (the one that we set up ourselves), receive a flag from it and, if the received flag is the current one, it will send back the new one. What is important to realize is that we don't have to look for a service that will send the new flag to us, as it will be the executable itself providing it to us as soon as somebody sends the old flag to it.
+                <br>
+                <pre class="brush: sh">
+                    [On connection 1] echo <current_flag> | nc -l -p 56565
+                    [On connection 2] ./suconnect 56565
+                    [On connection 1] [new flag is received]
+                </pre>
+                <!-- FLAG: gE269g2h3mw3pwgrj0Ha9Uoqen1c9DGr -->
+            </section>
+
+            <!--Level21-->
+            <a name="bandit21"></a>
+            <section>
+                <h3>Bandit 21</h3>
+                <h4><s>ssh bandit21@bandit.labs.overthewire.org -p 2220</s></h4>
+                We are told that there is a cronjob running and we are told where to look for it. A cronjob is just a script running automatically at given intervals. In the given location we find where the script is, and looking into the script we can see where to look for the password file.
+                <br>
+                <pre class="brush: sh">
+                    cd /etc/cron.d
+                    ls
+                    cat cronjob_bandit22 
+                    cat /usr/bin/cronjob_bandit22.sh
+                    cat /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+                </pre>
+                <!-- FLAG: Yk7owGAcWjwMVRwrTesJEwB7WVOiILLI -->
+            </section>
+
+            <!--Level22-->
+            <a name="bandit22"></a>
+            <section>
+                <h3>Bandit 22</h3>
+                <h4><s>ssh bandit22@bandit.labs.overthewire.org -p 2220</s></h4>
+                Same as in the last challenge, we find a script run by a cronjob. The only difference is that we have to find out the name of the file where the flag is written.<br>
+                We see that the target is the result of the <i>whoami</i> command, and in our case it should be bandit23. Then we run the line with the echo command with the proper target name, and that is the name of our file.
+                <br>
+                <pre class="brush: sh">
+                    cd /etc/cron.d
+                    ls
+                    cat cronjob_bandit23 
+                    cat /usr/bin/cronjob_bandit23.sh
+                    whoami [it says bandit22, but we want the file for bandit23]
+                    echo I am user bandit23 | md5sum | cut -d ' ' -f 1
+                    cat /tmp/8ca319486bfbbc3663ea0fbe81326349                    
+                </pre>
+                <!-- FLAG: jc1udXuA1tiHqjIsL8yaapX5XIAI6i0n -->
+            </section>
+
+            <!--Level23-->
+            <a name="bandit23"></a>
+            <section>
+                <h3>Bandit 23</h3>
+                <h4><s>ssh bandit23@bandit.labs.overthewire.org -p 2220</s></h4>
+                Yet again, a cronjob is running on the system. What it does is accessing a folder and running whatever script is there, with bandit24 permissions. Therefore, we create a script that reads the password file and prints it to a place that we can access.<br>
+                First of all we create a working folder in /tmp. In there, we create our script: it just cats the password file and writes the output to a file in our working folder. We have to make sure that the script is executable and that our folder can be accessed by everybody, so that bandit24 can write in it even though it is not the owner.To do this, we use the <i>chmod 777</i> command on both the file and the folder. What is left to do is to copy the script in the folder visited by the cronjob, and wait for a minute.
+                <br>
+                <pre class="brush: sh">
+                    cat /etc/cron.d/cronjob_bandit24
+                    cat /usr/bin/cronjob_bandit24.sh
+                    mkdir /tmp/olaola
+                    cd /tmp/olaola
+                    nano b24.sh
+                        > #!/bin/sh
+                        > cat /etc/bandit_pass/bandit24 > /tmp/olaola/flag24
+                    chmod 777 b24.sh
+                    chmod 777 /tmp/olaola
+                    cp b24.sh /var/spool/bandit24/b24.sh
+                    cat flag24 
+                </pre>
+                <!-- FLAG: UoMYTrfrBFHyQXmg6gzctqAwOmw1IohZ -->
+            </section>
+
+            <!--Level24-->
+            <a name="bandit24"></a>
+            <section>
+                <h3>Bandit 24</h3>
+                <h4><s>ssh bandit24@bandit.labs.overthewire.org -p 2220</s></h4>
+                We are told that we will get the new flag if we connect to port 30002 and send the current flag and a 4-digit pin. Also, the only way to get the pin is to try all the combinations.<br>
+                What we do is create a file in our /tmp folder that contains all the 'flag PIN' combinations, one per line. We can then cat it and pipe the output to a netcat connection. That is enough to have all the lines submitted one by one until we find the correct pin giving the new flag.
+                <br>
+                <pre class="brush: sh">
+                    mkdir /tmp/olaola
+                    cd /tmp/olaola
+                    nano b25.sh
+                        > #!/bin/bash
+                        > for a in {0000..9999}
+                        > do
+                        >    echo "UoMYTrfrBFHyQXmg6gzctqAwOmw1IohZ $a" >> pins
+                        > done
+                        > cat pins | nc localhost 30002
+                    chomd +x b25.sh
+                    ./b25.sh
+                </pre>
+                <!-- FLAG: uNG9O58gUE7snukf3bvZ0rxhtnjzSGzG -->
+            </section>
+
+            <!--Level25-->
+            <a name="bandit25"></a>
+            <section>
+                <h3>Bandit 25</h3>
+                <h4><s>ssh bandit25@bandit.labs.overthewire.org -p 2220</s></h4>
+                Altough we are provided with the ssh key, trying to access bandit26 kicks us out immediately. We are told that bandit26 uses a non standard shell, so we look into that: the /etc/passwd file contains a bunch of information, among which user name, user home directory and login shell for every user on that machine. Given that all the bandits are on the same machine, we cat the file and grep for bandit26, looking for that last bit of information.<br>
+                We now know where the shell is located, and we cat for that too to see what is going on in there: the only command invoked is <i>more</i>, and the way to exploit it (thanks Google) is to make the shell so small that upon ssh connection the script will be shown basically line by line. This allows to pass commands to the 'more' screen, and we can enter vim with the 'v' instruction. From vim, we use the ':e' instruction to see the password file.
+                <br>
+                <pre class="brush: sh">
+                    cat /etc/passwd | grep bandit26
+                    cat /usr/bin/showtext
+                    [ssh into bandit26 with the terminal window as small as possible]
+                    v
+                    :e /etc/bandit_pass/bandit26 [to insert commands in vim, first press esc]
+                </pre>
+                <!-- FLAG: 5czgV9L3Xx8JPOyRbXh6lQbmIOWvPT6Z -->
+            </section>
+
+            <!--Level26-->
+            <a name="bandit26"></a>
+            <section>
+                <h3>Bandit 26</h3>
+                <h4><s>ssh bandit26@bandit.labs.overthewire.org -p 2220</s></h4>
+                To get access to bandit26 use the same approach as the last challenge. When we are in vim, it's time to get a shell. Vim does have a 'shell' command, but it takes us back to the non-default one. However, we can tell it to use our own shell with ':set shell=/bin/sh' and then calling ':shell'.<br>
+                Now that we have a shell we see that there is an executable suid file, and we cat the flag with it.
+                <br>
+                <pre class="brush: sh">
+                    [ssh into bandit26 with the terminal window as small as possible]
+                    v
+                    :set shell=/bin/sh [to insert commands in vim, first press esc]
+                    :shell
+                    ls -lah
+                    file bandit27-do
+                    ./bandit27-do cat /etc/bandit_pass/bandit27
+                </pre>
+                <!-- FLAG: 3ba3118a22e93127a4ed485be72ef5ea -->
+            </section>
+
+            <!--Level27-->
+            <a name="bandit27"></a>
+            <section>
+                <h3>Bandit 27</h3>
+                <h4><s>ssh bandit27@bandit.labs.overthewire.org -p 2220</s></h4>
+                We know the link to the git repo and its password, we just have to clone it in a working folder in tmp, access it and cat the README
+                <br>
+                <pre class="brush: sh">
+                    mkdir /tmp/olaola
+                    cd /tmp/olaola
+                    git clone ssh://bandit27-git@localhost/home/bandit27-git/repo
+                    cd repo/
+                    ls -lah
+                    cat README
+                </pre>
+                <!-- FLAG: 0ef186ac70e04ea33b4c1853d2526fa2 -->
+            </section>
+
+            <!--Level28-->
+            <a name="bandit28"></a>
+            <section>
+                <h3>Bandit 28</h3>
+                <h4><s>ssh bandit28@bandit.labs.overthewire.org -p 2220</s></h4>
+                We know the link to the git repo and its password. After cloning it and checking the README, we realize that at some point there might have been a password in that file. Checking the log of commits we have the confirmation, as one of the commits is done to fix an info leak. If we take the hash of that commit and use the <i>git show</i> command we get the flag.
+                <br>
+                <pre class="brush: sh">
+                    mkdir /tmp/olaola
+                    cd /tmp/olaola
+                    git clone ssh://bandit28-git@localhost/home/bandit27-git/repo
+                    cd repo/
+                    ls -lah
+                    cat README
+                    git log
+                    git show 073c27c130e6ee407e12faad1dd3848a110c4f95
+                </pre>
+                <!-- FLAG: bbc96594b4e001778eee9975372716b2 -->
+            </section>
+
+            <!--Level29-->
+            <a name="bandit29"></a>
+            <section>
+                <h3>Bandit 29</h3>
+                <h4><s>ssh bandit29@bandit.labs.overthewire.org -p 2220</s></h4>
+                Again, clone the repo and check the README. There is nothing in there, but the comment on the password line is a hint: no passwords in production. So what about passwords in other branches?<br>
+                To check which branches exist we use <i>gir branch -a</i>, and to switch to the dev branch we use <i>git checkout dev</i>. If we look into README now, we will find the flag.
+                <br>
+                <pre class="brush: sh">
+                    mkdir /tmp/olaola
+                    cd /tmp/olaola
+                    git clone ssh://bandit29-git@localhost/home/bandit27-git/repo
+                    cd repo/
+                    ls -lah
+                    cat README
+                    git branch -a
+                    git checkout dev
+                    ls  -lah
+                    cat README.md 
+                </pre>
+                <!-- FLAG: 5b90576bedb2cc04c86a9e924ce42faf -->
+            </section>
+
+            <!--Level30-->
+            <a name="bandit30"></a>
+            <section>
+                <h3>Bandit 30</h3>
+                <h4><s>ssh bandit30@bandit.labs.overthewire.org -p 2220</s></h4>
+                Turns out that git has a few ways to leave messages in the branches, commits and versions. So let's clone the repo and check the README, but it's empty. So let's go through the options: noting in the logs or previous commits, no other branches. However, issuing <i>git tag</i> tells us that there is a 'secret' tag. We can look into it with the <i>git show</i> command.
+                <br>
+                <pre class="brush: sh">
+                    mkdir /tmp/olaola
+                    cd /tmp/olaola
+                    git clone ssh://bandit30-git@localhost/home/bandit27-git/repo
+                    cd repo/
+                    ls -lah
+                    cat README
+                    git tag
+                    git show secret
+                </pre>
+                <!-- FLAG: 47e603bb428404d265f59c42920d81e5 -->
+            </section>
+
+            <!--Level31-->
+            <a name="bandit31"></a>
+            <section>
+                <h3>Bandit 31</h3>
+                <h4><s>ssh bandit31@bandit.labs.overthewire.org -p 2220</s></h4>
+                After cloning and checking the README, we get instructions: we have to crate a file named key.txt, containing 'May I come in?' and push it to the master branch.<br>
+                To do that we create the file, add it to the staged files (we have to use the -f flag because the .gitignore file is trying to prevent .txt files from being loaded), we commit and we push.
+                <br>
+                <pre class="brush: sh">
+                    mkdir /tmp/olaola
+                    cd /tmp/olaola
+                    git clone ssh://bandit30-git@localhost/home/bandit27-git/repo
+                    cd repo/
+                    ls -lah
+                    cat README
+                    nano key.txt
+                    git add -f key.txt 
+                    git status
+                    git commit -m 'gimme the key'
+                    git push
+                </pre>
+                <!-- FLAG: 56a9bf19c63d650ce78e6ec0354ee45e -->
+            </section>
+
+            <!--Level32-->
+            <a name="bandit32"></a>
+            <section>
+                <h3>Bandit 32</h3>
+                <h4><s>ssh bandit32@bandit.labs.overthewire.org -p 2220</s></h4>
+                We get a shell, but everything is in upper case. To get a usable shell we have to do something that does not require letters: using positinal parameters. These are predefined variables that work as follows: executing './script.sh Hello World' will make '$0 = ./script.sh; $1 = Hello; $2 = World'. Therefore, if whatever is happening has been started by a shell, by typing $0 we should get our shell back. And from there, we can cat the password file.
+                <br>
+                <pre class="brush: sh">
+                    $0
+                    cat /etc/bandit_pass/bandit33
+                </pre>
+                <!-- FLAG: c9c3199ddf4121b10cf581a98d51caee -->
+            </section>
+
+            <!--Level33-->
+            <a name="bandit33"></a>
+            <section>
+                <h3>Bandit 33</h3>
+                <h4><s>ssh bandit33@bandit.labs.overthewire.org -p 2220</s></h4>
+                Cat the readme and be happy, Bandit is over!
+                <br>
+                <pre class="brush: sh">
+                    cat README.txt
+                </pre>
+                <!-- FLAG:  -->
+            </section>
+            
+        </div>
+    </body>
+</html>
+<!-- Design: Strata by HTML5 UP-->
