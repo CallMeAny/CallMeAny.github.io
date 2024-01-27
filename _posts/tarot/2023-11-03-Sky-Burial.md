@@ -12,7 +12,7 @@ categories:
 
 **Title:** Sky Burial \
 **Author:** Xinran \
-**Character:** Zhouma \
+**Character:** Zhouma
 
 The book came highly suggested by a friend, and maybe that made my expectations too high... but even considering the cultural clash, seems that either the writer or the main character are quite naive in this story.
 

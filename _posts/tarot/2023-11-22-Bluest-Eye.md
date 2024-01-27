@@ -13,7 +13,7 @@ categories:
 
 **Title:** The Bluest Eye \
 **Author:** Toni Morrison \
-**Character:** Pecola Breedlove \
+**Character:** Pecola Breedlove
 
 I am happy at the end of the book the author says she isn't sure that the book works as intended, because I agree with her: it felt like a salad of characters that nobody cared to toss and mix in a cohesive story.
 

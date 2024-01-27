@@ -11,7 +11,7 @@ categories:
 
 **Title:** A Vintage Affair \
 **Author:** Isabel Wolff \
-**Character:** Phoebe Swift \
+**Character:** Phoebe Swift
 
 Now I know why I usually don't read cheap romance books... all the characters seem so self centered! No need to pull a card, the lesson for myself is: there is not only one truth to things.
 

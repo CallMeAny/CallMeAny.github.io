@@ -7,12 +7,12 @@ categories:
 
 ![](/images/tarots/Five of Wands.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
 ![](/images/tarots/The Emperor.jpg){: width="100px" height="200px"}
-![](/images/tarots/The Emperess.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
+![](/images/tarots/The Empress.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
 ![](/images/tarots/Two of Cups.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
 
 **Title:** Margherita Dolcevita \
 **Author:** Stefano Benni \
-**Character:** Margherita Dolcevita \
+**Character:** Margherita Dolcevita
 
 Quick read of an Italian author that I love... and he delivered, but damn that ending hurt! I picked a spread focusing on comfort: gotta say, I don't feel it's enough for the situation the character is in, but I wanted to try a 4 cards spread and that was the most fitting.
 

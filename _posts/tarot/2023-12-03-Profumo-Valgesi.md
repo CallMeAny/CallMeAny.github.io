@@ -6,12 +6,12 @@ categories:
 ---
 
 ![](/images/tarots/Ace of Wands.jpg){: width="100px" height="200px"}
-![](/images/tarots/The Emperess.jpg){: width="100px" height="200px"}
+![](/images/tarots/The Empress.jpg){: width="100px" height="200px"}
 ![](/images/tarots/Knight of Wands.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
 
 **Title:** Il profumo dei Valgesi \
 **Author:** Malik Tariq Bashir \
-**Character:** Virginia Maltesi \
+**Character:** Virginia Maltesi
 
 Brand new italian book... and a really confusing one at that. The entire story is a dream, but that seems little excuse for the poor writing. So the spread is on the few well written chapters about the main character, and not within her dreams.
 

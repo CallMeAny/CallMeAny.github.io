@@ -5,7 +5,7 @@ categories:
   - Tarot
 ---
 
-![](/images/tarots/he Hanged Man.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
+![](/images/tarots/The Hanged Man.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
 ![](/images/tarots/Seven of Swords.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
 ![](/images/tarots/Five of Swords.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
 ![](/images/tarots/Five of Wands.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
@@ -15,7 +15,7 @@ categories:
 
 **Title:** Colorless Tsukuru Tazaki \
 **Author:** Haruki Murakami \
-**Character:** Tsukuru Tazaki \ 
+**Character:** Tsukuru Tazaki
 
 My first Murakami book... it was a smooth read, but there was an overall sadness that made things almost sticky. Let alone when you finally get to know what has happened.
 

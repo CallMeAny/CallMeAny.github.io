@@ -14,12 +14,12 @@ categories:
 ![](/images/tarots/Knight of Cups.jpg){: width="100px" height="200px"}
 ![](/images/tarots/Ace of Swords.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
 ![](/images/tarots/The World.jpg){: width="100px" height="200px"}
-![](/images/tarots/Magician.jpg){: width="100px" height="200px"}
+![](/images/tarots/The Magician.jpg){: width="100px" height="200px"}
 ![](/images/tarots/The Fool.jpg){: width="100px" height="200px"}
 
 **Title:** The Dividing \
 **Author:** Devin Downing \
-**Character:** Roselyn Malik; Matt MacArthur \
+**Character:** Roselyn Malik; Matt MacArthur
 
 This time a YA fantasy, and I decided both main characters deserved a reading... independently from each other, because romantic interests would be too easy. I used the Rose spread, as mentioned in the Rootlock Radio podcast.
 

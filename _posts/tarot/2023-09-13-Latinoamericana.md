@@ -15,7 +15,7 @@ categories:
 
 **Title:** Latinoamericana \
 **Author:** Ernesto Che Guevara \
-**Character:** Ernesto Che Guevara \
+**Character:** Ernesto Che Guevara
 
 This reading is a little bit cheating, after all Ernesto is a person that existed and went down to history so easy to know how to interpret the cards. I went with an horseshoe spread for influences, attitudes and outcomes.
 

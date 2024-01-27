@@ -11,7 +11,7 @@ categories:
 
 **Title:** Erections, Ejaculations, Exhibitions and General Tales of Ordinary Madness \
 **Author:** Charles Bukowski \
-**Character:** - \
+**Character:** -
 
 This time I went for a so-called classic, and as with other classics from the same period, it was not a reading that I enjoyed at all. The tarot reading was also challenging, as the author and the main character are often the same person in twisted ways.
 

@@ -13,7 +13,7 @@ categories:
 
 **Title:** Shape of Water \
 **Driector:** Guillermo del Toro \
-**Character:** Elisa Esposito \
+**Character:** Elisa Esposito
 
 This was... bizarre. So pretty much what one would expect from a del Toro movie. But I tend to disagree with those saying that she is the same as the fish.
 

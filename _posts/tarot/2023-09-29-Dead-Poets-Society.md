@@ -11,7 +11,7 @@ categories:
 
 **Title:** Dead Poets Society \
 **Author:** N. H. Kleinbaum \
-**Character:** John Keating \
+**Character:** John Keating
 
 From what I understood, this book has been written based on the movie... Yeah, sadly the movie is better. I improvised a literary spread, I do not know any Shakespeare so I went with Dante instead.
 

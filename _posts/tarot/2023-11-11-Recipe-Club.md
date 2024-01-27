@@ -5,7 +5,7 @@ categories:
   - Tarot
 ---
 
-![](/images/tarots/The Judgment.jpg){: width="100px" height="200px"}
+![](/images/tarots/The Judgement.jpg){: width="100px" height="200px"}
 ![](/images/tarots/The Devil.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
 ![](/images/tarots/Seven of Swords.jpg){: width="100px" height="200px"}
 ![](/images/tarots/Queen of Coins.jpg){: width="100px" height="200px" style="transform:rotate(180deg);"}
@@ -13,7 +13,7 @@ categories:
 
 **Title:** The Recipe Club \
 **Author:**  Andrea Israel, Nancy Garfinkel \
-**Character:** Valerie \
+**Character:** Valerie
 
 Finally on holiday, a lot of reading going on. Not exactly high literature, but it's a nice down-to-earth relationship to analyze (as a side note, the recipes in the book are nothing special. Too bad.). The spread is from the point of view of Valerie.
 

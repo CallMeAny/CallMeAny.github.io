@@ -13,7 +13,7 @@ categories:
 
 **Title:** Slade House \
 **Author:** David Mitchell \
-**Character:** Lady Norah Grayer \
+**Character:** Lady Norah Grayer
 
 Really enjoyed the story, hard to find a character for a tarot reading! Picked a spread with a theme that seemed to fit the generational arc.
 
