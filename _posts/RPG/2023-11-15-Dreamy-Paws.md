@@ -5,7 +5,7 @@ categories:
   - RPG
 ---
 
-![center-aligned-image](https://img.itch.zone/aW1hZ2UvODgyODEwLzQ5NzE5NzUucG5n/794x1000/YDJJ6O.png){: .align-center}
+![center-aligned-image](https://img.itch.zone/aW1hZ2UvODgyODEwLzQ5NzE5NzUucG5n/794x1000/YDJJ6O.png){: .align-center width="800px" height="400px"}
 
 Game by **Sunfish Co** @ [https://sunfishco.itch.io/dreamy-paws](https://sunfishco.itch.io/dreamy-paws)
 {: .notice--info}

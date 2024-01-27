@@ -5,7 +5,7 @@ categories:
   - RPG
 ---
 
-![center-aligned-image](https://img.itch.zone/aW1hZ2UvNjQzMTY3LzM0NDI1NTYucG5n/794x1000/Voowhb.png){: .align-center}
+![center-aligned-image](https://img.itch.zone/aW1hZ2UvNjQzMTY3LzM0NDI1NTYucG5n/794x1000/Voowhb.png){: .align-center width="400px" height="600px"}
 
 Game by **fencedforest** @ [https://fencedforest.itch.io/motor-mocha](https://fencedforest.itch.io/motor-mocha)
 {: .notice--info}

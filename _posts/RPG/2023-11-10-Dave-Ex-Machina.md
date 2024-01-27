@@ -5,7 +5,7 @@ categories:
   - RPG
 ---
 
-![center-aligned-image](https://img.itch.zone/aW1hZ2UvNzIwMDUwLzM5OTE4NzkuanBn/original/UTlvdL.jpg){: .align-center}
+![center-aligned-image](https://img.itch.zone/aW1hZ2UvNzIwMDUwLzM5OTE4NzkuanBn/original/UTlvdL.jpg){: .align-center width="500px" height="400px"}
 
 Game by **Alfred Valley** @ [https://alfredvalley.itch.io/dave-ex-machina](https://alfredvalley.itch.io/dave-ex-machina)
 {: .notice--info}

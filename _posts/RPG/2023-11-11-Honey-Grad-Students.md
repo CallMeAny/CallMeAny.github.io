@@ -5,7 +5,7 @@ categories:
   - RPG
 ---
 
-![center-aligned-image](https://img.itch.zone/aW1hZ2UvNzQyNzA2LzQxMzg1MTQucG5n/original/WK1848.png){: .align-center}
+![center-aligned-image](https://img.itch.zone/aW1hZ2UvNzQyNzA2LzQxMzg1MTQucG5n/original/WK1848.png){: .align-center width="400px" height="500px"}
 
 Game by **Marc Strocks** @ [https://mstrocks.itch.io/honey-i-shrunk-the-grad-students](https://mstrocks.itch.io/honey-i-shrunk-the-grad-students)
 {: .notice--info}

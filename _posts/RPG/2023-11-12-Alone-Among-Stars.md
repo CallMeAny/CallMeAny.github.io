@@ -5,7 +5,7 @@ categories:
   - RPG
 ---
 
-![center-aligned-image](https://img.itch.zone/aW1hZ2UvMzQzMDc2LzE5MzE0OTEucG5n/794x1000/YsRyA6.png){: .align-center}
+![center-aligned-image](https://img.itch.zone/aW1hZ2UvMzQzMDc2LzE5MzE0OTEucG5n/794x1000/YsRyA6.png){: .align-center width="400px" height="500px"}
 
 Game by **Takuma Okada** @ [https://noroadhome.itch.io/alone-among-the-stars](https://noroadhome.itch.io/alone-among-the-stars)
 {: .notice--info}

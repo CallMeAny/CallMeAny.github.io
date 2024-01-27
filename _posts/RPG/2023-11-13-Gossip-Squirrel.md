@@ -5,7 +5,7 @@ categories:
   - RPG
 ---
 
-![center-aligned-image](https://img.itch.zone/aW1hZ2UvNTkzMDUxLzMxMzY5NjAuanBn/794x1000/gm5oMf.jpg){: .align-center}
+![center-aligned-image](https://img.itch.zone/aW1hZ2UvNTkzMDUxLzMxMzY5NjAuanBn/794x1000/gm5oMf.jpg){: .align-center width="400px" height="600px"}
 
 Game by **Lucian Kahn** @ [https://necromancy.itch.io/gossip-squirrel](https://necromancy.itch.io/gossip-squirrel)
 {: .notice--info}
