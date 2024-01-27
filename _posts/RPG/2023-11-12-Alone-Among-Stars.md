@@ -40,7 +40,7 @@ No setup needed. Mix your deck of cards and get ready.
 Planet 1: **Terra** \
 **1** card
 
-- Day 1 - **Jack of Hearts ; 6** \
+- Day 1 - **Knight of Hearts ; 6** \
 I am well rested so I look out of the window during the launch. I can see the pyramids in the Egyptian desert... makes me think how impressive humanity is.
 
 Planet 2: **Greenhouse** \
@@ -52,7 +52,7 @@ We were not expecting on this barren planet to enter a cave and discover such lu
 - Day 5 - **King of Spades ; 6** \
 Now we understand how photosynthesis works: we laid down to rest, but when we turned off our lamps we could still see! The evaporation of the vegetation forms luminescent clouds. Quite impressive to witness!
 
-- Day 6 - **Jack of Diamonds ; 2** \
+- Day 6 - **Knight of Diamonds ; 2** \
 Back on the surface and preparing to leave the planet, we could finally see the local sunset. As soon as the light was gone, the desert itself started beaming of so many beautiful colors. Must be some microbioma, seems that fluorescence and luminescence are popular on this planet! Sadly, we do not have the equipment to analyze it.
 
 Planet 3: **Amazonas** \
