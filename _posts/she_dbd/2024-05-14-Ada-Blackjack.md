@@ -13,5 +13,6 @@ She joined an expedition across the Chukchi Sea between Alaska and Siberia, with
 They reached Wrangel Island, but there food soon run out and they couldn't find enough local animals to hunt to survive. Three of the men left to try crossing the sea to Siberia looking for help, but where never to be heard again. Ada stayed back caring for the last man who was affected by scurvy: she managed to learn how to survive in the extreme freezing conditions doing the work of multiple men, and could care for the sick man for another 6 months while he constantly criticized her, before she was left completely on her own. \
 She was later saved and went back to live in the Arctic, and apart from her salary expedition and the revenue of selling some furs, she didn't get to benefit from any of the articles or books about her misadventure.⁠ \
 ⁠
+
 📕: Ada Blackjack: A True Story of Survival in the Arctic⁠ \
 📷: Public Domain⁠
