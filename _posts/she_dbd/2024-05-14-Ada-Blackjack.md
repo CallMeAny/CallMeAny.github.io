@@ -1,5 +1,6 @@
 ---
 title: "Ada Blackjack"
+permalink: /shedbd/ada-blackjack
 excerpt_separator: "<!--more-->"
 categories:
   - she.dbd

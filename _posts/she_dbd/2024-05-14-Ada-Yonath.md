@@ -1,5 +1,6 @@
 ---
 title: "Ada E. Yonath"
+permalink: /shedbd/ada-yonath
 excerpt_separator: "<!--more-->"
 categories:
   - she.dbd
