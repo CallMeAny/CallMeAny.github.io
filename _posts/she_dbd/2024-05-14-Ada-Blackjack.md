@@ -6,7 +6,7 @@ categories:
   - she.dbd
 ---
 
-![center-aligned-image](https://commons.wikimedia.org/wiki/File:Ada_Blackjack_in_winter_costume.jpg#/media/File:Ada_Blackjack_in_winter_costume.jpg){: .align-center}
+![center-aligned-image](https://upload.wikimedia.org/wikipedia/commons/1/16/Ada_Blackjack_in_winter_costume.jpg){: .align-center}
 
 Ada Blackjack (1898-1983) was a Inpiat woman known as the female Robinson Crusoe. \
 She joined an expedition across the Chukchi Sea between Alaska and Siberia, with the goal of claiming islands for Canada. Ada was hired as cook and seamstress, and made believe that she would be among many other Alaskan natives, while in fact the team was made only of 4 other men. \
