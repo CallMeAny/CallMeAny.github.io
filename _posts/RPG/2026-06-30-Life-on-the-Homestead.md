@@ -20,7 +20,7 @@ You start with dice rolls to define starting location, skills, crop and animals 
 # Gameplay
 
 ### Timing
-At least 30 minutes... but if you want to go throught the whole deck of cards, it's going to take quite some more!
+You can go on as long as you are having fun... or until you went throught the whole deck of cards!
 
 ### Tools
 - 1 d6
